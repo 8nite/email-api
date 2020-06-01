@@ -5,7 +5,7 @@
   "scripts": {
     "start": "git pull && npm-run-all build server",
     "dev": "nodemon --watch src/ --exec yarn start",
-    "server": "export LD_LIBRARY_PATH=/opt/oracle/instantclient_19_6 && node ./dist-server/app",
+    "server": "node ./dist-server/app",
     "transpile": "babel ./src --out-dir dist-server",
     "clean": "rimraf dist-server",
     "build": "npm-run-all clean transpile",
@@ -31,9 +31,7 @@
     "query-string": "^6.12.1",
     "request": "^2.88.2",
     "request-promise": "^4.2.5",
-    "rimraf": "^3.0.2",
-    "swagger": "^0.7.5",
-    "swagger-ui-express": "^4.1.4"
+    "rimraf": "^3.0.2"
   },
   "babel": {
     "presets": [
