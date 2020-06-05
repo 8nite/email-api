@@ -1,5 +1,6 @@
 import express from 'express'
 import email from './functions/email'
+import routes from './functions/routes'
 import OpenCase from './TOC/OpenCase'
 import CancelCase from './TOC/CancelCase'
 import ResolveCase from './TOC/ResolveCase'
@@ -11,7 +12,10 @@ import ResponseTimeSLAReminder from './TOC/ResponseTimeSLAReminder'
 
 var router = express.Router();
 
+router.use('/routes', routes)
+
 router.use('/email', email);
+
 router.use('/TOC/OpenCase', OpenCase);
 router.use('/TOC/CancelCase', CancelCase);
 router.use('/TOC/ResolveCase', ResolveCase);

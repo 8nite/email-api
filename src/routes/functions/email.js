@@ -21,7 +21,7 @@ router.post('/', async(req, res) => {
         from: req.body.from, // sender address
         to: "herbert.tung@hgc.com.hk", // list of receivers
         cc: ["herbert.tung@hgc.com.hk"], // list of receivers
-        subject: req.body.subject, // Subject line
+        subject: process.env.EMAILSUBPREFIX + req.body.subject, // Subject line
         text: req.body.text || null, // plain text body
         html: req.body.html || null, // html body
       });

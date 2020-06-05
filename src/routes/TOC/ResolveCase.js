@@ -18,11 +18,12 @@ router.post('/', async (req, res) => {
     const issueLink = mappedFields['Issue Type'].self.match(/[a-z]+:\/\/[^\/]+\//)[0]
     const status = mappedFields.Status.name
     const statusChanger = req.body.user.name
+    const userEmail = req.body.user.emailAddress
 
     //console.log(mappedFields['Assignment Group'][0].match(/(.*) \([-A-Z0-9]*\)$/)[1])
 
     //Send to Email
-    let to = [assignee]
+    let to = [userEmail]
 
     let cc = await getEmails(assignmentGroup, 'Email')
     cc = cc.concat(await getEmails('TOC', 'Email'))
