@@ -17,10 +17,14 @@ let transporter = nodemailer.createTransport({
 
 router.post('/', async(req, res) => {
     console.log('sending email: ' + req.body.subject)
+
+    const to = process.env.EMAILTO || req.body.to
+    const cc = process.env.EMAILCC || req.body.cc
+
     let info = await transporter.sendMail({
         from: req.body.from, // sender address
-        to: "herbert.tung@hgc.com.hk", // list of receivers
-        cc: ["herbert.tung@hgc.com.hk"], // list of receivers
+        to: to, // list of receivers
+        cc: cc, // list of receivers
         subject: process.env.EMAILSUBPREFIX + req.body.subject, // Subject line
         text: req.body.text || null, // plain text body
         html: req.body.html || null, // html body
