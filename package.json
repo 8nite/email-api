@@ -5,7 +5,7 @@
   "scripts": {
     "start": "git pull && npm-run-all build server",
     "dev": "nodemon --watch src/ --exec yarn start",
-    "server": "node ./dist-server/app >> server.log",
+    "server": "node ./dist-server/app >> server.log 2>&1",
     "transpile": "babel ./src --out-dir dist-server",
     "clean": "rimraf dist-server",
     "build": "npm-run-all clean transpile",
@@ -36,9 +36,13 @@
     "rimraf": "^3.0.2"
   },
   "babel": {
-    "presets": ["@babel/preset-env"],
+    "presets": [
+      "@babel/preset-env"
+    ],
     "plugins": [
-        ["@babel/transform-runtime"]
+      [
+        "@babel/transform-runtime"
+      ]
     ]
   },
   "devDependencies": {
