@@ -5,7 +5,7 @@
   "scripts": {
     "start": "git pull && npm-run-all build server",
     "dev": "nodemon --watch src/ --exec yarn start",
-    "server": "node ./dist-server/app",
+    "server": "node ./dist-server/app >> server.log",
     "transpile": "babel ./src --out-dir dist-server",
     "clean": "rimraf dist-server",
     "build": "npm-run-all clean transpile",
