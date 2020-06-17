@@ -8,6 +8,7 @@ require('dotenv').config()
 var router = express.Router();
 
 router.post('/', async (req, res) => {
+    res.send('done')
     const mappedFields = await getFieldMapping(req.body.issue.fields)
 
     const caseNumber = req.body.issue.key
@@ -54,8 +55,6 @@ HGC TOC`
         }
     }
     rp(emailOptions)
-
-    res.send('done')
 })
 
 module.exports = router;
