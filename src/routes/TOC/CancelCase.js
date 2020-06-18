@@ -35,9 +35,6 @@ router.post('/', async (req, res) => {
         cc.push(serviceManager)
     }
 
-    console.log(companyEmail)
-    console.log(serviceManager)
-
     const emailOptions = {
         method: 'POST',
         uri: 'http://' + process.env.LOCALHOST + ':' + process.env.PORT + '/email',

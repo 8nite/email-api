@@ -18,7 +18,7 @@ router.post('/', async (req, res) => {
     const assignee = mappedFields.Assignee[0].split(' ')[0]
     const issueLink = mappedFields['Issue Type'].self.match(/[a-z]+:\/\/[^\/]+\//)[0]
     const userEmail = req.body.user.emailAddress
-    const companyEmail = await getEmails('User Profile', 'Username', mappedFields['Contact - Company Reference'], 'Email')
+    const companyEmail = await getEmails('User Profile', 'Username', mappedFields['Contact - Company Reference'][0].match(/(.*) \([-A-Z0-9]*\)$/)[1], 'Email')
     const serviceManager = mappedFields['Service Manager'].name
 
     //console.log(mappedFields['Assignment Group'][0].match(/(.*) \([-A-Z0-9]*\)$/)[1])
@@ -32,9 +32,6 @@ router.post('/', async (req, res) => {
     if (typeof caseSeverity == 'string' && (caseSeverity.search('2') >= 0 || caseSeverity.search('1') >= 0)) {
         cc.push(serviceManager)
     }
-
-    console.log(companyEmail)
-    console.log(serviceManager)
 
     const emailOptions = {
         method: 'POST',
