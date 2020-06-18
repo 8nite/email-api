@@ -20,7 +20,7 @@ router.post('/', async (req, res) => {
     const status = mappedFields.Status.name
     const statusChanger = req.body.user.name
     const userEmail = req.body.user.emailAddress
-    const companyEmail = await getEmails('User Profile', 'Username', mappedFields['Contact - Company Reference'], 'Email')
+    const companyEmail = await getEmails('User Profile', 'Username', mappedFields['Contact - Company Reference'][0].match(/(.*) \([-A-Z0-9]*\)$/)[1], 'Email')
     const serviceManager = mappedFields['Service Manager'].name
 
     //console.log(mappedFields['Assignment Group'][0].match(/(.*) \([-A-Z0-9]*\)$/)[1])
