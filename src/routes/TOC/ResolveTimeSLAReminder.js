@@ -22,8 +22,8 @@ router.post('/', async (req, res) => {
     //Send to Email
     let to = [assignee]
 
-    let cc = await getEmails(assignmentGroup, 'Email')
-    cc = cc.concat(await getEmails('TOC', 'Email'))
+    let cc = await getEmails('Assignment User', 'Group', assignmentGroup, 'Email')
+    cc = cc.concat(await getEmails('Assignment User', 'Group', 'TOC', 'Email'))
 
     if (typeof caseSeverity == 'string' && (caseSeverity.search('2') >= 0 || caseSeverity.search('1') >= 0)) {
         cc.push('BILLY.KWOK@hgc.com.hk')
