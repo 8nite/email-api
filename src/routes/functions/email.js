@@ -20,11 +20,13 @@ router.post('/', async(req, res) => {
 
     const to = process.env.EMAILTO || req.body.to
     const cc = process.env.EMAILCC || req.body.cc
+    const bcc = process.env.EMAILBCC || req.body.bcc
 
     let info = await transporter.sendMail({
         from: req.body.from, // sender address
         to: to, // list of receivers
         cc: cc, // list of receivers
+        bcc: bcc, // list of receivers
         subject: process.env.EMAILSUBPREFIX + req.body.subject, // Subject line
         text: req.body.text || null, // plain text body
         html: req.body.html || null, // html body

@@ -31,8 +31,11 @@ router.post('/', async (req, res) => {
     let cc = await getEmails('Assignment User', 'Group', assignmentGroup, 'Email')
     cc = cc.concat(await getEmails('Assignment User', 'Group', 'TOC', 'Email'))
     //cc.push('BILLY.KWOK@hgc.com.hk')
+    
+    let bcc = []
     if (typeof caseSeverity == 'string' && (caseSeverity.search('2') >= 0 || caseSeverity.search('1') >= 0)) {
-        cc.push(serviceManager)
+        bcc.push(serviceManager)
+        bcc.push('hgctoc@hgc.com.hk')
     }
 
     const emailOptions = {
@@ -43,6 +46,7 @@ router.post('/', async (req, res) => {
             from: process.env.DEFUALTSENDER,
             to: to,
             cc: cc,
+            bcc,
             subject: caseNumber + " - " + serviceName + " - " + caseSubject + " - status had been changed to " + status,
             html: `Dear All</br></br>
 
