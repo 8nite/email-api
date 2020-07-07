@@ -9,6 +9,19 @@ var router = express.Router();
 
 router.post('/', async (req, res) => {
     res.send('done')
+
+    try {
+        const options = {
+            method: 'POST',
+            uri: 'http://' + process.env.LOCALHOST + ':' + process.env.PORT + '/TOC/Assignment',
+            json: true,
+            body: req.body
+        }
+        rp(options).then(($) => {
+            res.send($)
+        })
+    } catch {}
+    
     const mappedFields = await getFieldMapping(req.body.issue.fields)
 
     const caseNumber = req.body.issue.key
@@ -26,15 +39,18 @@ router.post('/', async (req, res) => {
     //Send to Email
     let to = companyEmail
 
-    let cc = await getEmails('Assignment User', 'Group', assignmentGroup, 'Email')
-    cc = cc.concat(await getEmails('Assignment User', 'Group', 'TOC', 'Email'))
+    //let cc = await getEmails('Assignment User', 'Group', assignmentGroup, 'Email')
+    //cc = cc.concat(await getEmails('Assignment User', 'Group', 'TOC', 'Email'))
     //cc.push('BILLY.KWOK@hgc.com.hk')
+
+    let cc = 'hgctoc@hgc.com.hk'
 
     let bcc = []
     if (typeof caseSeverity == 'string' && (caseSeverity.search('2') >= 0 || caseSeverity.search('1') >= 0)) {
         bcc.push(serviceManager)
-        bcc.push('hgctoc@hgc.com.hk')
     }
+    bcc.push('BILLY.KWOK@hgc.com.hk')
+    bcc = bcc.concat(await getEmails('Assignment User', 'Group', 'TOC', 'Email'))
 
     const emailOptions = {
         method: 'POST',

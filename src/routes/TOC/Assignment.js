@@ -9,6 +9,7 @@ var router = express.Router();
 
 router.post('/', async (req, res) => {
     res.send('done')
+    
     const mappedFields = await getFieldMapping(req.body.issue.fields)
 
     const caseNumber = req.body.issue.key

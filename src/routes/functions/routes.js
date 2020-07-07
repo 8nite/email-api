@@ -9,6 +9,7 @@ var router = express.Router();
 
 router.post('/', async (req, res) => {
     if (req.body.issue.fields.project.name.search('TOC') >= 0 && req.body.changelog.items.some((item) => item.field === 'Assignee')) {
+        console.log('Assignee changed: ' + req.body.changelog)
         const options = {
             method: 'POST',
             uri: 'http://' + process.env.LOCALHOST + ':' + process.env.PORT + '/TOC/Assignment',
