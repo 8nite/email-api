@@ -4,7 +4,9 @@ import cookieParser from 'cookie-parser'
 import logger from 'morgan'
 import debug from 'debug'
 import http from 'http'
+import cron from 'node-cron'
 import indexRouter from './routes/index'
+import rp from 'request-promise'
 
 require('dotenv').config()
 
@@ -12,19 +14,22 @@ const app = express();
 
 // view engine setup
 app.use(logger(':date[iso] :method :url :status :response-time ms - :res[content-length]'));
+app.use(express.urlencoded({ limit: '20000mb', extended: true }));
+app.use(express.json({ limit: '20000mb', extended: true }));
+//app.use(bodyparser.json({limit: '50mb', extended: true}));
+//app.use(bodyparser.urlencoded( {limit: '50mb', extended: true} ));
+//app.use(cookieParser());
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
 
 app.use('/', indexRouter);
 
 // catch 404 and forward to error handler
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
   next(createError(404));
 });
 
 // error handler
-app.use(function(err, req, res, next) {
+app.use(function (err, req, res, next) {
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
@@ -119,3 +124,8 @@ function onListening() {
     : 'port ' + addr.port;
   debug('Listening on ' + bind);
 }
+
+cron.schedule('30 */3 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,20,21,22,23 * * *', () => {
+  rp('http://' + process.env.LOCALHOST + ':' + process.env.PORT + '/email/get')
+});
+//rp('http://127.0.0.1:3001/email/get')

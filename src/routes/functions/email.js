@@ -1,5 +1,8 @@
 import express from 'express'
 import nodemailer from 'nodemailer'
+import readNextEmail from '../../functions/readNextEmail'
+import rp from 'request-promise'
+import { Base64 } from 'js-base64'
 
 require('dotenv').config()
 
@@ -15,7 +18,7 @@ let transporter = nodemailer.createTransport({
     },
 });
 
-router.post('/', async(req, res) => {
+router.post('/', async (req, res) => {
     console.log('sending email: ' + req.body.subject)
 
     const to = process.env.EMAILTO || req.body.to
@@ -30,8 +33,59 @@ router.post('/', async(req, res) => {
         subject: process.env.EMAILSUBPREFIX + req.body.subject, // Subject line
         text: req.body.text || null, // plain text body
         html: req.body.html || null, // html body
-      });
+        attachments: req.body.attachments || null
+    });
     res.json(info)
+})
+
+router.get('/get', async (req, res) => {
+    let ret = await readNextEmail()
+    if (ret && ret.body) {
+        res.send(ret.body)
+    } else {
+    res.send('0')
+    }
+})
+
+router.post('/sendToCustomer', async (req, res) => {
+    const from = process.env.IBVSDFROM
+    const to = req.body.to
+    const cc = req.body.cc
+    const subject = req.body.subject
+    const body = Base64.decode(req.body.body)
+    const attachments = req.body.attachments
+    /*
+    const attachmentFilename = req.body.attachmentFilename
+    let attachmentURI = req.body.attachmentURI
+    if (attachmentURI.search(',' > -1)) {
+        attachmentURI = attachmentURI.substring(attachmentURI.search(',') + 1)
+    }
+    */
+    const emailOptions = {
+        method: 'POST',
+        uri: 'http://' + process.env.LOCALHOST + ':' + process.env.PORT + '/email',
+        json: true,
+        body: {
+            from: from,
+            to: to,
+            cc: cc,
+            subject: subject,
+            html: body,
+            attachments
+        }
+    }
+    /*
+    if (attachmentFilename.length > 1) {
+        emailOptions.body.attachments = [{
+            filename: attachmentFilename,
+            content: attachmentURI,
+            encoding: 'base64'
+        }]
+    }
+    */
+    await rp(emailOptions)
+
+    res.send('done')
 })
 
 module.exports = router;
