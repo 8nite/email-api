@@ -103,7 +103,7 @@ const readNextEmail = (() => {
                                 attachment.map((item) => {
                                     let newItem = item
                                     if (!item.filename && !item.cid && item.encoding && item.encoding.toUpperCase() === 'BASE64') {
-                                        newItem.content = Buffer.from(item.content).toString('base64');
+                                        newItem.content = Base64.encode(item.content);
                                         newItem.isMsg = true
                                     }
                                 })
@@ -135,7 +135,7 @@ const readNextEmail = (() => {
 
                             const emailOptions = {
                                 method: 'POST',
-                                uri: 'http://' + process.env.LOCALHOST + ':' + process.env.PORT + '/email',
+                                uri: 'http://' + process.env.LOCALHOST + ':' + process.env.PORT + '/emailapi/email',
                                 json: true,
                                 body: {
                                     from: process.env.DEFUALTSENDER,

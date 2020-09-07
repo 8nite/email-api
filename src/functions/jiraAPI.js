@@ -42,3 +42,25 @@ export const getFieldMapping = (async (fields, ret) => {
         return ret
     })
 })
+
+export const getInsight = (async (id, field) => {
+    return new Promise(function (resolve, reject) {
+
+        let query = {
+            objectId: id
+        }
+
+        const getAssGrpOptions = {
+            uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/get/jira/object/object?' + queryString.stringify(query),
+            json: true
+        }
+
+        rp(getAssGrpOptions)
+            .then((objects) => {
+                if (objects[field])
+                    resolve(objects[field])
+                else
+                    resolve('')
+            })
+    })
+})
