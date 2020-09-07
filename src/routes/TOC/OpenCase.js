@@ -36,8 +36,10 @@ router.post('/', async (req, res) => {
     } catch { }
     const issueLink = mappedFields['Issue Type'].name //mappedFields['Issue Type'].self.match(/[a-z]+:\/\/[^\/]+\//)[0]
     const status = mappedFields.Status.name
-    const statusChanger = req.body.user.name
-    const userEmail = req.body.user.emailAddress
+    let statusChanger = ''
+    try {
+        statusChanger = await getInsight(mappedFields['Assignee'][0].originId.split('_')[1], 'Name')
+    } catch { }
     let companyEmail = ''
     try {
         companyEmail = await getEmails('UserProfile', 'id', mappedFields['User Information'][0].originId.split('_')[1], 'Email')//await getEmails('UserProfile', 'Username', mappedFields['Contact - Company Reference'][0].match(/(.*) \([-A-Z0-9]*\)$/)[1], 'Email')
