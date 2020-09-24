@@ -21,7 +21,7 @@ app.use(express.json({ limit: '20000mb', extended: true }));
 //app.use(cookieParser());
 app.use(express.json());
 
-app.use('/', indexRouter);
+app.use('/emailapi/', indexRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
@@ -125,7 +125,7 @@ function onListening() {
   debug('Listening on ' + bind);
 }
 
-cron.schedule('30 */3 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,20,21,22,23 * * *', () => {
-  rp('http://' + process.env.LOCALHOST + ':' + process.env.PORT + '/email/get')
-});
+//cron.schedule('30 */3 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,20,21,22,23 * * *', () => {
+//  rp('http://' + process.env.LOCALHOST + ':' + process.env.PORT + '/email/get')
+//});
 //rp('http://127.0.0.1:3001/email/get')

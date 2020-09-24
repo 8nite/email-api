@@ -3,11 +3,11 @@ import queryString from 'query-string'
 
 require('dotenv').config()
 
-export const getEmails = (async (sourceType, sourceAttr, attr, ret) => {
+export const getEmails = (async (sourceProject, sourceType, sourceAttr, attr, ret) => {
     return new Promise(function (resolve, reject) {
 
         let query = {
-            objectSchemaName: 'TOC',
+            objectSchemaName: sourceProject,
             objectTypeName: sourceType,
             findAttribute: sourceAttr,
             findValue: attr,
