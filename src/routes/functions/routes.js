@@ -34,9 +34,9 @@ router.post('/', async (req, res) => {
                 from0: 'fields',
                 from1: 'Account Manager Email',
                 CMDBSchemaName: 'CivilWork',
-                CMDBObjectTypeName: 'AD_USERS',
+                CMDBObjectTypeName: 'Account Manager',
                 CMDBObjectAttributeName: 'Email',
-                fieldName: 'Creator User Info',
+                fieldName: 'Account Manager',
             }
             const options = {
                 uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/set/jira/issue/setJiraCreator?' + queryString.stringify(param),
@@ -49,9 +49,9 @@ router.post('/', async (req, res) => {
                 from0: 'fields',
                 from1: 'Solution Consultant Email',
                 CMDBSchemaName: 'CivilWork',
-                CMDBObjectTypeName: 'AD_USERS',
+                CMDBObjectTypeName: 'Solution Consultant',
                 CMDBObjectAttributeName: 'Email',
-                fieldName: 'Creator User Info',
+                fieldName: 'Solution Consultant',
             }
             const options2 = {
                 uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/set/jira/issue/setJiraCreator?' + queryString.stringify(param),
@@ -64,9 +64,9 @@ router.post('/', async (req, res) => {
                 from0: 'fields',
                 from1: 'building ID',
                 CMDBSchemaName: 'CivilWork',
-                CMDBObjectTypeName: 'buil',
-                CMDBObjectAttributeName: 'Email',
-                fieldName: 'Creator User Info',
+                CMDBObjectTypeName: 'Building',
+                CMDBObjectAttributeName: 'Building ID',
+                fieldName: 'Building',
             }
             const options3 = {
                 uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/set/jira/issue/setJiraCreator?' + queryString.stringify(param),
