@@ -28,13 +28,13 @@ router.post('/', async (req, res) => {
             }
             rp(options)
         }
-        else if (req.body.issue.fields.project.name.search('Internal Civil Work Quotation (ICWQ)') >= 0) {
+        else if (req.body.issue.fields.project.name.search('Internal Civil Work Quotation') >= 0) {
             const param = {
                 issueId: req.body.issue.key,
                 from0: 'fields',
                 from1: 'Account Manager Email',
                 CMDBSchemaName: 'CivilWork',
-                CMDBObjectTypeName: 'Account Manager',
+                CMDBObjectTypeName: 'AD_USERS',
                 CMDBObjectAttributeName: 'Email',
                 fieldName: 'Account Manager',
             }
@@ -49,12 +49,12 @@ router.post('/', async (req, res) => {
                 from0: 'fields',
                 from1: 'Solution Consultant Email',
                 CMDBSchemaName: 'CivilWork',
-                CMDBObjectTypeName: 'Solution Consultant',
+                CMDBObjectTypeName: 'AD_USERS',
                 CMDBObjectAttributeName: 'Email',
                 fieldName: 'Solution Consultant',
             }
             const options2 = {
-                uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/set/jira/issue/setJiraCreator?' + queryString.stringify(param),
+                uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/set/jira/issue/setJiraCreator?' + queryString.stringify(param2),
                 json: true
             }
             rp(options2)
@@ -69,7 +69,7 @@ router.post('/', async (req, res) => {
                 fieldName: 'Building',
             }
             const options3 = {
-                uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/set/jira/issue/setJiraCreator?' + queryString.stringify(param),
+                uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/set/jira/issue/setJiraCreator?' + queryString.stringify(param3),
                 json: true
             }
             rp(options3)
