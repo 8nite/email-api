@@ -54,7 +54,7 @@ router.post('/', async (req, res) => {
 
     const emailOptions = {
         method: 'POST',
-        uri: 'http://' + process.env.LOCALHOST + ':' + process.env.PORT + '/email',
+        uri: 'http://' + process.env.LOCALHOST + ':' + process.env.PORT + '/emailapi/email',
         json: true,
         body: {
             from: process.env.DEFUALTSENDER,

@@ -12,28 +12,212 @@ router.post('/', async (req, res) => {
     if (req.body.webhookEvent == 'jira:issue_created') {
         console.log('An issue was created: ' + req.body.issue.key + ' on project: ')
         console.log(req.body.issue.fields.project)
-        if (req.body.issue.fields.project.name.search('HelpDesk') >= 0) {
+        if (req.body.issue.fields.project.name.search('Self Service') >= 0) {
+            //Add Submitter to issue
             const param = {
                 issueId: req.body.issue.key,
-                from0: 'creator',
+                from0: 'reporter',
                 from1: 'emailAddress',
-                CMDBSchemaName: 'CivilWork',
+                CMDBSchemaName: 'HGC',
                 CMDBObjectTypeName: 'AD_USERS',
-                CMDBObjectAttributeName: 'Email',
-                fieldName: 'Creator User Info',
+                CMDBObjectAttributeName: 'mail',
+                fieldName: 'Submitter',
             }
-            const options = {
+            let options = {
                 uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/set/jira/issue/setJiraCreator?' + queryString.stringify(param),
                 json: true
             }
-            rp(options)
+            rp(options).then(async () => {
+
+                //get issue fields
+                let options2 = {
+                    uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/get/jira/issue/issueNames?issueId=' + req.body.issue.key,
+                    json: true
+                }
+                let issusWithNames = await rp(options2)
+                //Add support team for each request type
+                const ITSystemInsightId = issusWithNames.fields['Service Request Items'][0].match(/\(([-A-Z0-9]*)\)$/)[1]
+                console.log(ITSystemInsightId)
+
+                options2 = {
+                    uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/get/jira/object/keyAttributeValue?Key=' + ITSystemInsightId + '&returnAttribute=Support Team',
+                    json: true
+                }
+                let supportTeam
+                if (issusWithNames.fields['Customer Request Type'].requestType.name == 'Service Request') {
+                    supportTeam = 'SW-SS ' + await rp(options2)
+                }
+                else if (issusWithNames.fields['Customer Request Type'].requestType.name == 'Account Setups') {
+                    supportTeam = 'AA-SS ' + await rp(options2)
+                }
+                else {
+                    supportTeam = 'IN-SS ' + await rp(options2)
+                }
+                console.log(supportTeam)
+
+                let param2 = {
+                    objectSchemaName: 'HGC',
+                    objectTypeName: 'SelfServiceSupportTeam',
+                    findAttribute: 'Name',
+                    findValue: supportTeam,
+                    returnAttribute: 'Key'
+                }
+                options2 = {
+                    uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/get/jira/object/attributeValue?' + queryString.stringify(param2),
+                    json: true
+                }
+                const supportTeamId = await rp(options2)
+                console.log(supportTeamId)
+
+                options = {
+                    method: 'POST',
+                    uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/get/jira/issue/CustomFieldID',
+                    body: { name: 'Assigned Group' },//'Creator User Info' },
+                    json: true
+                }
+
+                let customFieldID = await rp(options)
+                    .then(($) => {
+                        return $
+                    })
+
+                options = {
+                    method: 'POST',
+                    uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/set/jira/issue/updateIssue',
+                    body: {
+                        "updateIssue": {
+                            "issueId": req.body.issue.key,
+                            "fields": {
+                                [customFieldID]: [{ 'key': supportTeamId[0] }]
+                            }
+                        }
+                    },
+                    json: true
+                }
+
+                rp(options)
+
+                //Add 1st Approver to issue
+                console.log('Starting for 1st approval')
+                let SubmiterInsightId = null
+                let department = null
+
+                try {
+                    SubmiterInsightId = issusWithNames.fields['Cost Center Group'][0].match(/\(([-A-Z0-9]*)\)$/)[1]
+
+                    options2 = {
+                        uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/get/jira/object/keyAttributeValue?Key=' + SubmiterInsightId + '&returnAttribute=Name',
+                        json: true
+                    }
+                    department = await rp(options2)
+                } catch { }
+
+                while (!SubmiterInsightId) {
+                    try {
+                        console.log('Getting updated fields')
+                        let options2 = {
+                            uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/get/jira/issue/issueNames?issueId=' + req.body.issue.key,
+                            json: true
+                        }
+                        let issusWithNames = await rp(options2)
+                        console.log(issusWithNames.fields['Submitter'])
+                        SubmiterInsightId = issusWithNames.fields['Submitter'][0].match(/\(([-A-Z0-9]*)\)$/)[1]
+                    } catch {
+
+                    }
+                }
+
+                console.log(SubmiterInsightId)
+
+
+                if (!department) {
+                    options2 = {
+                        uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/get/jira/object/keyAttributeValue?Key=' + SubmiterInsightId + '&returnAttribute=department',
+                        json: true
+                    }
+                    department = await rp(options2)
+                }
+                console.log('Getting Department of submitter: ' + department)
+
+                param2 = {
+                    objectSchemaName: 'HGC',
+                    objectTypeName: 'Cost Center Users',
+                    findAttribute: 'CostCenter',
+                    findValue: department,
+                    findAttribute2: 'IsApprover',
+                    findValue2: 'Y',
+                    returnAttribute: 'Name'
+                }
+                options2 = {
+                    uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/get/jira/object/2attributeValue?' + queryString.stringify(param2),
+                    json: true
+                }
+                const approver1list = await rp(options2)
+                console.log(approver1list)
+
+                options = {
+                    method: 'POST',
+                    uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/get/jira/issue/CustomFieldID',
+                    body: { name: '1st level Approval' },//'Creator User Info' },
+                    json: true
+                }
+
+                customFieldID = await rp(options)
+                    .then(($) => {
+                        return $
+                    })
+
+                options = {
+                    method: 'POST',
+                    uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/set/jira/issue/updateIssue',
+                    body: {
+                        "updateIssue": {
+                            "issueId": req.body.issue.key,
+                            "fields": {
+                                [customFieldID]: approver1list.map((email) => { return { name: email } })
+                            }
+                        }
+                    },
+                    json: true
+                }
+
+                rp(options)
+
+                //Add UAT Sign off Approver to issue
+                options = {
+                    method: 'POST',
+                    uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/get/jira/issue/CustomFieldID',
+                    body: { name: 'UAT Sign Off Approver' },//'Creator User Info' },
+                    json: true
+                }
+
+                customFieldID = await rp(options)
+                    .then(($) => {
+                        return $
+                    })
+                options = {
+                    method: 'POST',
+                    uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/set/jira/issue/updateIssue',
+                    body: {
+                        "updateIssue": {
+                            "issueId": req.body.issue.key,
+                            "fields": {
+                                [customFieldID]: { name: req.body.issue.fields.reporter.emailAddress }
+                            }
+                        }
+                    },
+                    json: true
+                }
+
+                rp(options)
+            })
         }
         else if (req.body.issue.fields.project.name.search('Internal Civil Work Quotation') >= 0) {
             const param = {
                 issueId: req.body.issue.key,
                 from0: 'fields',
                 from1: 'Account Manager Email',
-                CMDBSchemaName: 'CivilWork',
+                CMDBSchemaName: 'HGC',
                 CMDBObjectTypeName: 'AD_USERS',
                 CMDBObjectAttributeName: 'Email',
                 fieldName: 'Account Manager',
@@ -48,7 +232,7 @@ router.post('/', async (req, res) => {
                 issueId: req.body.issue.key,
                 from0: 'fields',
                 from1: 'Solution Consultant Email',
-                CMDBSchemaName: 'CivilWork',
+                CMDBSchemaName: 'HGC',
                 CMDBObjectTypeName: 'AD_USERS',
                 CMDBObjectAttributeName: 'Email',
                 fieldName: 'Solution Consultant',
@@ -74,6 +258,10 @@ router.post('/', async (req, res) => {
             }
             rp(options3)
         }
+    }
+    else if (req.body.webhookEvent == 'jira:issue_updated') {
+        console.log('An issue was updated: ' + req.body.issue.key + ' on project: ')
+        console.log(req.body.issue.fields.project)
     }
     else if (req.body.issue.fields.project.name.search('TOC') >= 0 && req.body.changelog.items.some((item) => item.field === 'Assignee')) {
         console.log('Assignee changed: ' + req.body.changelog)
