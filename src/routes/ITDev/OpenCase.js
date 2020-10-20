@@ -12,13 +12,11 @@ router.post('/', async (req, res) => {
     const mappedFields = await getFieldMapping(req.body.issue.fields)
 
     const caseNumber = req.body.issue.key
-    const serviceName = req.body.issue.fields.issuetype.name
     const caseSubject = req.body.issue.fields.summary
     const caseDescription = req.body.issue.fields.description
-    const statusChanger = req.body.user.name
-
-    const submitterInsightId = mappedFields['Submitter'][0].match(/\(([-A-Z0-9]*)\)$/)[1]
-    const to = await getEmails('HGC', 'AD_USERS', 'Key', submitterInsightId, 'mail')
+    
+    const assignedGroupInsightId = mappedFields['Assigned Group'][0].match(/(.*) \(([-A-Z0-9]*)\)$/)[1]
+    const to = await getEmails('HGC', 'SelfServiceSupportUser', 'SelfServiceSupportTeam', assignedGroupInsightId, 'Name')
     const cc = []
     const bcc = []
 
@@ -31,21 +29,23 @@ router.post('/', async (req, res) => {
             to: to,
             cc: cc,
             bcc,
-            subject: 'HGC  - ' + caseNumber + ' - ' + caseSubject + ' - status had been changed to \' Resolved',
+            subject: 'HGC  - ' + caseNumber + ' - ' + caseSubject + ' had been created',
             html: `Dear All</br></br>
 
-            This is to acknowledge that `+ statusChanger + ` had changed the case ` + caseNumber + ` status to be resolved</br></br>
+            This is to acknowledge  the receipt of a reported case</br>
+            We will have it checked and updates will be provided once available.</br></br>
+            
+            Reference Number : ` + caseNumber + `</br></br>
 
-            The incident would be closed 3 days after if there are no any reply on this case</br></br>
-
-            Reference Number : `+ caseNumber + `</br></br>
-
+            <a href="https://jirasd.hgc.com.hk/browse/`+ caseNumber + `">https://jirasd.hgc.com.hk/browse/` + caseNumber + `</a></br></br>
+            
             Please do not hesitate to contact us at hgcitsd@hgc.com.hk if any further questions or inquires regarding your ticket</br>
             This is an auto notification sent from system, please do not reply this email.</br></br>
             
             HGC`
+        }
     }
-}
+    console.log(emailOptions)
     rp(emailOptions)
 })
 

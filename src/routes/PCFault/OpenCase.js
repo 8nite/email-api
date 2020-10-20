@@ -37,8 +37,7 @@ router.post('/', async (req, res) => {
             This is to acknowledge  the receipt of a reported case</br>
             We will have it checked and updates will be provided once available.</br></br>
             
-            Reference Number : ` + caseNumber + `</br>
-            Description : ` + caseDescription + `</br></br>
+            Reference Number : ` + caseNumber + `</br></br>
             
             Please do not hesitate to contact us at hgcitsd@hgc.com.hk if any further questions or inquires regarding your ticket</br>
             This is an auto notification sent from system, please do not reply this email.</br></br>

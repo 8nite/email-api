@@ -12,6 +12,7 @@ import TOCResponseTimeSLAReminder from './TOC/ResponseTimeSLAReminder'
 import PCFaultOpenCase from './PCFault/OpenCase'
 import PCFaultCancelCase from './PCFault/CancelCase'
 import PCFaultResolveCase from './PCFault/ResolveCase'
+import ITDevOpenCase from './ITDev/OpenCase'
 
 var router = express.Router();
 
@@ -28,9 +29,11 @@ router.use('/TOC/ResolveTimeSLAReminder', TOCResolveTimeSLAReminder);
 router.use('/TOC/ResponseTimeSLABreached', TOCResponseTimeSLABreached);
 router.use('/TOC/ResponseTimeSLAReminder', TOCResponseTimeSLAReminder);
 
-
 router.use('/PCFault/OpenCase', PCFaultOpenCase);
 router.use('/PCFault/CancelCase', PCFaultCancelCase);
 router.use('/PCFault/ResolveCase', PCFaultResolveCase);
+
+router.use('/ITDev/OpenCase', ITDevOpenCase);
+
 
 module.exports = router;

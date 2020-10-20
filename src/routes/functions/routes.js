@@ -36,154 +36,178 @@ router.post('/', async (req, res) => {
                 }
                 let issusWithNames = await rp(options2)
                 //Add support team for each request type
-                const ITSystemInsightId = issusWithNames.fields['Service Request Items'][0].match(/\(([-A-Z0-9]*)\)$/)[1]
-                console.log(ITSystemInsightId)
+                try {
+                    const ITSystemInsightId = issusWithNames.fields['Service Request Items'][0].match(/\(([-A-Z0-9]*)\)$/)[1]
+                    console.log(ITSystemInsightId)
 
-                options2 = {
-                    uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/get/jira/object/keyAttributeValue?Key=' + ITSystemInsightId + '&returnAttribute=Support Team',
-                    json: true
-                }
-                let supportTeam
-                if (issusWithNames.fields['Customer Request Type'].requestType.name == 'Service Request') {
-                    supportTeam = 'SW-SS ' + await rp(options2)
-                }
-                else if (issusWithNames.fields['Customer Request Type'].requestType.name == 'Account Setups') {
-                    supportTeam = 'AA-SS ' + await rp(options2)
-                }
-                else {
-                    supportTeam = 'IN-SS ' + await rp(options2)
-                }
-                console.log(supportTeam)
+                    options2 = {
+                        uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/get/jira/object/keyAttributeValue?Key=' + ITSystemInsightId + '&returnAttribute=Support Team',
+                        json: true
+                    }
+                    let supportTeam
+                    if (issusWithNames.fields['Customer Request Type'].requestType.name == 'Service Request') {
+                        supportTeam = 'SW-SS ' + await rp(options2)
+                    }
+                    else if (issusWithNames.fields['Customer Request Type'].requestType.name == 'Account Setups') {
+                        supportTeam = 'AA-SS ' + await rp(options2)
+                    }
+                    else {
+                        supportTeam = 'IN-SS ' + await rp(options2)
+                    }
+                    console.log(supportTeam)
 
-                let param2 = {
-                    objectSchemaName: 'HGC',
-                    objectTypeName: 'SelfServiceSupportTeam',
-                    findAttribute: 'Name',
-                    findValue: supportTeam,
-                    returnAttribute: 'Key'
-                }
-                options2 = {
-                    uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/get/jira/object/attributeValue?' + queryString.stringify(param2),
-                    json: true
-                }
-                const supportTeamId = await rp(options2)
-                console.log(supportTeamId)
+                    let param2 = {
+                        objectSchemaName: 'HGC',
+                        objectTypeName: 'SelfServiceSupportTeam',
+                        findAttribute: 'Name',
+                        findValue: supportTeam,
+                        returnAttribute: 'Key'
+                    }
+                    options2 = {
+                        uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/get/jira/object/attributeValue?' + queryString.stringify(param2),
+                        json: true
+                    }
+                    const supportTeamId = await rp(options2)
+                    console.log(supportTeamId)
 
-                options = {
-                    method: 'POST',
-                    uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/get/jira/issue/CustomFieldID',
-                    body: { name: 'Assigned Group' },//'Creator User Info' },
-                    json: true
-                }
+                    options = {
+                        method: 'POST',
+                        uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/get/jira/issue/CustomFieldID',
+                        body: { name: 'Assigned Group' },//'Creator User Info' },
+                        json: true
+                    }
 
-                let customFieldID = await rp(options)
-                    .then(($) => {
-                        return $
-                    })
+                    let customFieldID = await rp(options)
+                        .then(($) => {
+                            return $
+                        })
 
-                options = {
-                    method: 'POST',
-                    uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/set/jira/issue/updateIssue',
-                    body: {
-                        "updateIssue": {
-                            "issueId": req.body.issue.key,
-                            "fields": {
-                                [customFieldID]: [{ 'key': supportTeamId[0] }]
+                    options = {
+                        method: 'POST',
+                        uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/set/jira/issue/updateIssue',
+                        body: {
+                            "updateIssue": {
+                                "issueId": req.body.issue.key,
+                                "fields": {
+                                    [customFieldID]: [{ 'key': supportTeamId[0] }]
+                                }
+                            }
+                        },
+                        json: true
+                    }
+
+                    rp(options).then(async () => {
+                        const optionIssue = {
+                            uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/get/jira/issue/issue?issueId=' + req.body.issue.key,
+                            json: true,
+                        }
+
+                        const openCase = {
+                            method: 'POST',
+                            uri: 'http://' + process.env.LOCALHOST + ':' + process.env.PORT + '/emailapi/ITDev/OpenCase',
+                            json: true,
+                            body: {
+                                issue: await rp(optionIssue)
                             }
                         }
-                    },
-                    json: true
-                }
 
-                rp(options)
-
+                        rp(openCase)
+                    })
+                } catch (e) { console.log(e) }
                 //Add 1st Approver to issue
                 console.log('Starting for 1st approval')
-                let SubmiterInsightId = null
-                let department = null
-
                 try {
-                    SubmiterInsightId = issusWithNames.fields['Cost Center Group'][0].match(/\(([-A-Z0-9]*)\)$/)[1]
+                    /*let SubmiterInsightId = null
+                    let department = null
 
-                    options2 = {
-                        uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/get/jira/object/keyAttributeValue?Key=' + SubmiterInsightId + '&returnAttribute=Name',
-                        json: true
-                    }
-                    department = await rp(options2)
-                } catch { }
-
-                while (!SubmiterInsightId) {
                     try {
-                        console.log('Getting updated fields')
-                        let options2 = {
-                            uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/get/jira/issue/issueNames?issueId=' + req.body.issue.key,
+                        SubmiterInsightId = issusWithNames.fields['Cost Center Group'][0].match(/\(([-A-Z0-9]*)\)$/)[1]
+
+                        options2 = {
+                            uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/get/jira/object/keyAttributeValue?Key=' + SubmiterInsightId + '&returnAttribute=Name',
                             json: true
                         }
-                        let issusWithNames = await rp(options2)
-                        console.log(issusWithNames.fields['Submitter'])
-                        SubmiterInsightId = issusWithNames.fields['Submitter'][0].match(/\(([-A-Z0-9]*)\)$/)[1]
-                    } catch {
+                        department = await rp(options2)
+                    } catch { }
 
+                    while (!SubmiterInsightId) {
+                        try {
+                            console.log('Getting updated fields')
+                            let options2 = {
+                                uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/get/jira/issue/issueNames?issueId=' + req.body.issue.key,
+                                json: true
+                            }
+                            let issusWithNames = await rp(options2)
+                            console.log(issusWithNames.fields['Submitter'])
+                            SubmiterInsightId = issusWithNames.fields['Submitter'][0].match(/\(([-A-Z0-9]*)\)$/)[1]
+                        } catch {
+
+                        }
                     }
-                }
 
-                console.log(SubmiterInsightId)
+                    console.log(SubmiterInsightId)
 
 
-                if (!department) {
+                    if (!department) {
+                        options2 = {
+                            uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/get/jira/object/keyAttributeValue?Key=' + SubmiterInsightId + '&returnAttribute=department',
+                            json: true
+                        }
+                        department = await rp(options2)
+                    }
+                    console.log('Getting Department of submitter: ' + department)
+
+                    let param2 = {
+                        objectSchemaName: 'HGC',
+                        objectTypeName: 'Cost Center Users',
+                        findAttribute: 'CostCenter',
+                        findValue: department,
+                        findAttribute2: 'IsApprover',
+                        findValue2: 'Y',
+                        returnAttribute: 'Name'
+                    }
                     options2 = {
-                        uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/get/jira/object/keyAttributeValue?Key=' + SubmiterInsightId + '&returnAttribute=department',
+                        uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/get/jira/object/2attributeValue?' + queryString.stringify(param2),
                         json: true
                     }
-                    department = await rp(options2)
-                }
-                console.log('Getting Department of submitter: ' + department)
+                    const approver1list = await rp(options2)
+                    console.log('approver1list: ')
+                    console.log(approver1list)
+                    */
 
-                param2 = {
-                    objectSchemaName: 'HGC',
-                    objectTypeName: 'Cost Center Users',
-                    findAttribute: 'CostCenter',
-                    findValue: department,
-                    findAttribute2: 'IsApprover',
-                    findValue2: 'Y',
-                    returnAttribute: 'Name'
-                }
-                options2 = {
-                    uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/get/jira/object/2attributeValue?' + queryString.stringify(param2),
-                    json: true
-                }
-                const approver1list = await rp(options2)
-                console.log(approver1list)
+                    const approver1list = [issusWithNames.fields['Department Approver'][0].match(/(.*) \(([-A-Z0-9]*)\)$/)[1]]
 
-                options = {
-                    method: 'POST',
-                    uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/get/jira/issue/CustomFieldID',
-                    body: { name: '1st level Approval' },//'Creator User Info' },
-                    json: true
-                }
+                    options = {
+                        method: 'POST',
+                        uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/get/jira/issue/CustomFieldID',
+                        body: { name: '1st level Approval' },//'Creator User Info' },
+                        json: true
+                    }
 
-                customFieldID = await rp(options)
-                    .then(($) => {
-                        return $
-                    })
+                    let customFieldID = await rp(options)
+                        .then(($) => {
+                            return $
+                        })
 
-                options = {
-                    method: 'POST',
-                    uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/set/jira/issue/updateIssue',
-                    body: {
-                        "updateIssue": {
-                            "issueId": req.body.issue.key,
-                            "fields": {
-                                [customFieldID]: approver1list.map((email) => { return { name: email } })
+                    options = {
+                        method: 'POST',
+                        uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/set/jira/issue/updateIssue',
+                        body: {
+                            "updateIssue": {
+                                "issueId": req.body.issue.key,
+                                "fields": {
+                                    [customFieldID]: approver1list.map((email) => { return { name: email } })
+                                }
                             }
-                        }
-                    },
-                    json: true
-                }
+                        },
+                        json: true
+                    }
 
-                rp(options)
-
-                //Add UAT Sign off Approver to issue
+                    rp(options)
+                } catch (e) { console.log(e) }
+            })
+            //Add UAT Sign off Approver to issue
+            try {
                 options = {
                     method: 'POST',
                     uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/get/jira/issue/CustomFieldID',
@@ -191,7 +215,7 @@ router.post('/', async (req, res) => {
                     json: true
                 }
 
-                customFieldID = await rp(options)
+                let customFieldID = await rp(options)
                     .then(($) => {
                         return $
                     })
@@ -210,7 +234,84 @@ router.post('/', async (req, res) => {
                 }
 
                 rp(options)
-            })
+            } catch (e) { console.log(e) }
+
+            //clone fields
+            console.log('Start Cloning Fields')
+            try {
+                options = {
+                    method: 'POST',
+                    uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/set/jira/issue/CloneInsightToField',
+                    body: {
+                        updateIssue: {
+                            issueId: req.body.issue.key,
+                            fieldName: 'Request Type',
+                            attributeName: 'NeedDevelopment',
+                            replaceFieldName: 'NeedDevelopment'
+                        }
+                    },
+                    json: true
+                }
+                rp(options)
+
+                options = {
+                    method: 'POST',
+                    uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/set/jira/issue/CloneInsightToField',
+                    body: {
+                        updateIssue: {
+                            issueId: req.body.issue.key,
+                            fieldName: 'Request Type',
+                            attributeName: 'NeedUAT',
+                            replaceFieldName: 'NeedUAT'
+                        }
+                    },
+                    json: true
+                }
+                rp(options)
+
+                options = {
+                    method: 'POST',
+                    uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/set/jira/issue/CloneInsightToField',
+                    body: {
+                        updateIssue: {
+                            issueId: req.body.issue.key,
+                            fieldName: 'Service Request Items',
+                            attributeName: 'need1stApproval',
+                            replaceFieldName: 'need1stApproval'
+                        }
+                    },
+                    json: true
+                }
+                rp(options)
+
+                options = {
+                    method: 'POST',
+                    uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/set/jira/issue/CloneInsightToField',
+                    body: {
+                        updateIssue: {
+                            issueId: req.body.issue.key,
+                            fieldName: 'Service Request Items',
+                            attributeName: 'need2ndApproval',
+                            replaceFieldName: 'need2ndApproval'
+                        }
+                    },
+                    json: true
+                }
+                rp(options)
+            } catch (e) { console.log(e) }
+        }
+        else if (req.body.issue.fields.project.name.search('IT Development') >= 0) {
+            
+            const openCase = {
+                method: 'POST',
+                uri: 'http://' + process.env.LOCALHOST + ':' + process.env.PORT + '/emailapi/ITDev/OpenCase',
+                json: true,
+                body: {
+                    issue: req.body.issue
+                }
+            }
+
+            rp(openCase)
         }
         else if (req.body.issue.fields.project.name.search('Internal Civil Work Quotation') >= 0) {
             const param = {
