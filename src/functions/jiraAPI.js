@@ -5,24 +5,36 @@ require('dotenv').config()
 
 export const getEmails = (async (sourceProject, sourceType, sourceAttr, attr, ret) => {
     return new Promise(function (resolve, reject) {
+        if (sourceAttr === 'Key') {
+            const getAssGrpOptions = {
+                uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/get/jira/object/keyAttributeValue?Key=' + attr + '&returnAttribute=' + ret,
+                json: true
+            }
 
-        let query = {
-            objectSchemaName: sourceProject,
-            objectTypeName: sourceType,
-            findAttribute: sourceAttr,
-            findValue: attr,
-            returnAttribute: ret
+            rp(getAssGrpOptions)
+                .then((objects) => {
+                    resolve([objects])
+                })
         }
+        else {
+            let query = {
+                objectSchemaName: sourceProject,
+                objectTypeName: sourceType,
+                findAttribute: sourceAttr,
+                findValue: attr,
+                returnAttribute: ret
+            }
 
-        const getAssGrpOptions = {
-            uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/get/jira/object/attributeValue?' + queryString.stringify(query),
-            json: true
+            const getAssGrpOptions = {
+                uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/get/jira/object/attributeValue?' + queryString.stringify(query),
+                json: true
+            }
+
+            rp(getAssGrpOptions)
+                .then((objects) => {
+                    resolve(objects)
+                })
         }
-
-        rp(getAssGrpOptions)
-            .then((objects) => {
-                resolve(objects)
-            })
     })
 })
 

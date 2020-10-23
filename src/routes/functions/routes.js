@@ -205,6 +205,52 @@ router.post('/', async (req, res) => {
 
                     rp(options)
                 } catch (e) { console.log(e) }
+                //Add 1st Approver to issue
+                console.log('Starting for 2nd approval')
+                try {
+                    const ServiceRequestType = issusWithNames.fields['Service Request Type'][0].match(/(.*) \(([-A-Z0-9]*)\)$/)[1]
+
+                    const ITSystemInsightId = issusWithNames.fields['Service Request Items'][0].match(/\(([-A-Z0-9]*)\)$/)[1]
+
+                    options2 = {
+                        uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/get/jira/object/keyAttributeValue?Key=' + ITSystemInsightId + '&returnAttribute=Category',
+                        json: true
+                    }
+                    const Category = await rp(options2)
+
+                    if (ServiceRequestType !== "Application and System" || Category === "IT Infra") {
+
+                        const approver1list = ['BILLY.KWOK@hgc.com.hk']
+
+                        options = {
+                            method: 'POST',
+                            uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/get/jira/issue/CustomFieldID',
+                            body: { name: '2nd level Approval' },//'Creator User Info' },
+                            json: true
+                        }
+
+                        let customFieldID = await rp(options)
+                            .then(($) => {
+                                return $
+                            })
+
+                        options = {
+                            method: 'POST',
+                            uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/set/jira/issue/updateIssue',
+                            body: {
+                                "updateIssue": {
+                                    "issueId": req.body.issue.key,
+                                    "fields": {
+                                        [customFieldID]: approver1list.map((email) => { return { name: email } })
+                                    }
+                                }
+                            },
+                            json: true
+                        }
+
+                        rp(options)
+                    }
+                } catch (e) { console.log(e) }
             })
             //Add UAT Sign off Approver to issue
             try {
@@ -301,7 +347,7 @@ router.post('/', async (req, res) => {
             } catch (e) { console.log(e) }
         }
         else if (req.body.issue.fields.project.name.search('IT Development') >= 0) {
-            
+
             const openCase = {
                 method: 'POST',
                 uri: 'http://' + process.env.LOCALHOST + ':' + process.env.PORT + '/emailapi/ITDev/OpenCase',
