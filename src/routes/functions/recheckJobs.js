@@ -9,7 +9,7 @@ var router = express.Router();
 router.get('/', async (req, res) => {
     console.log('Rechecking Jobs')
     let options = {
-        uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/get/jira/issue/search?jql=project%20%3D%20SS%20AND%20issuetype%20%3D%20"Service%20Request"%20AND%20"1st%20level%20Approval"%20is%20EMPTY%20AND%20status%20%3D%20"Pending%20for%201st%20Approval"&maxResults=9999',
+        uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/get/jira/issue/search?jql=project%20%3D%20"Self%20Service"%20AND%20((type%20%3D%20"Service%20Request"%20AND%20"1st%20level%20Approval"%20%20is%20EMPTY%20AND%20status%20%3D%20"Pending%20for%201st%20Approval")%20OR%20(type%20%3D%20Incident%20AND%20"Assigned%20Group"%20is%20EMPTY%20AND%20status%20%3D%20Open))&maxResults=9999',
         json: true
     }
     rp(options).then(($) => {

@@ -45,7 +45,7 @@ router.post('/', async (req, res) => {
             //Add support team for each request type
             try {
                 let supportTeam
-                if (issusWithNames.fields['Customer Request Type'].requestType.name != 'Report Issues') {
+                if (issusWithNames.fields['Issue Type'].name !== 'Incident' || issusWithNames.fields['Customer Request Type'].requestType.name != 'Report Issues') {
                     let ITSystemInsightId
                     if (issusWithNames.fields['Customer Request Type'].requestType.name == 'Service Request') {
                         ITSystemInsightId = issusWithNames.fields['Service Request Items'][0].match(/\(([-A-Z0-9]*)\)$/)[1]
@@ -485,7 +485,19 @@ router.post('/', async (req, res) => {
     }
     else if (req.body.webhookEvent == 'jira:issue_updated') {
         console.log('An issue was updated: ' + req.body.issue.key + ' on project: ')
-        //console.log(req.body.issue.fields.project)
+        if (req.body.issue.fields.project.name.search('IT Development') >= 0 && req.body.issue.fields.status.name === "Canceled") {
+
+            const cancelCase = {
+                method: 'POST',
+                uri: 'http://' + process.env.LOCALHOST + ':' + process.env.PORT + '/emailapi/ITDev/CancelCase',
+                json: true,
+                body: {
+                    issue: req.body.issue
+                }
+            }
+
+            rp(cancelCase)
+        }
     }
     else if (req.body.issue.fields.project.name.search('TOC') >= 0 && req.body.changelog.items.some((item) => item.field === 'Assignee')) {
         console.log('Assignee changed: ' + req.body.changelog)

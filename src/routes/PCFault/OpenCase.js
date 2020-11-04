@@ -14,17 +14,13 @@ router.post('/', async (req, res) => {
         mappedFields = mappedFields.fields
 
         const caseNumber = req.body.issue.key
-        console.log(caseNumber)
         const serviceName = req.body.issue.fields.issuetype.name
-        console.log(serviceName)
         const caseSubject = req.body.issue.fields.summary
-        console.log(caseSubject)
-        const statusChanger = req.body.issue.fields.reporter.name
-        console.log(statusChanger)
-        const userName = req.body.issue.fields.reporter.name
+        const statusChanger = req.body.issue.fields.reporter.displayName.match(/([^\(]*) /)[1]
+        const userName = req.body.issue.fields.reporter.displayName.match(/([^\(]*) /)[1]
         const assignedGroup = mappedFields['Assigned Group'][0].match(/(.*) \(([-A-Z0-9]*)\)$/)[1]
-        
-        const to = await getEmails('HGC', 'SelfServiceSupportUser', 'SelfServiceSupportTeam', assignedGroup, 'Name')
+
+        const to = req.body.issue.fields.reporter.emailAddress
         console.log(to)
         const cc = ['hgctoc@hgc.com.hk', '008OPS@hgc.com.hk', 'hgcitsd@hgc.com.hk']
         console.log(cc)
@@ -42,18 +38,18 @@ router.post('/', async (req, res) => {
                 subject: 'HGC Service Desk - ' + caseNumber + ' - ' + caseSubject + ' had been created',
                 html: `Dear ` + userName + `</br></br>
 
-            This is to acknowledge  the receipt of a reported case</br>
-            We will have it checked and updates will be provided once available.</br></br>
-            
-            Ticket type : `+ serviceName + `</br>
-            Reference Number : `+ caseNumber + `</br>
-            Summary : `+ caseSubject + `</br>
-            Service : `+ mappedFields['Category'][0].match(/(.*) \(([-A-Z0-9]*)\)$/)[1] + `</br></br>
-            
-            Please do not hesitate to contact us at 2128 2666 or hgctoc@hgc.com.hk if any further questions or inquires regarding your ticket</br>
-            This is an auto notification sent from system, please do not reply this email.</br></br>
-            
-            HGC TOC`
+                This is to acknowledge the receipt of a reported case</br>
+                We will have it checked and updates will be provided once available.</br></br>
+                
+                Ticket type : `+ serviceName + `</br>
+                Reference Number : `+ caseNumber + `</br>
+                Summary : `+ caseSubject + `</br>
+                Service : `+ mappedFields['Category'][0].match(/(.*) \(([-A-Z0-9]*)\)$/)[1] + `</br></br>
+                
+                Please do not hesitate to contact us at 2128 2666 or hgctoc@hgc.com.hk if any further questions or inquires regarding your ticket</br>
+                This is an auto notification sent from system, please do not reply this email.</br></br>
+
+                HGC TOC`
             }
         }
         rp(emailOptions)

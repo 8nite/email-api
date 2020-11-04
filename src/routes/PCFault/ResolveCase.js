@@ -16,11 +16,11 @@ router.post('/', async (req, res) => {
     const serviceName = req.body.issue.fields.issuetype.name
     const caseSubject = req.body.issue.fields.summary
     const caseDescription = req.body.issue.fields.description
-    const statusChanger = req.body.issue.fields.reporter.name
+    const statusChanger = req.body.user.name
     const userName = mappedFields['Submitter'][0].match(/(.*) \(.*\) \(([-A-Z0-9]*)\)$/)[1]
 
     const assignedGroup = mappedFields['Assigned Group'][0].match(/(.*) \(([-A-Z0-9]*)\)$/)[1]
-    const to = await getEmails('HGC', 'SelfServiceSupportUser', 'SelfServiceSupportTeam', assignedGroup, 'Name')
+    const to = req.body.issue.fields.reporter.emailAddress
     const cc = ['hgctoc@hgc.com.hk', '008OPS@hgc.com.hk', 'hgcitsd@hgc.com.hk']
     const bcc = []
 
@@ -67,8 +67,7 @@ router.post('/', async (req, res) => {
             subject: 'HGC Service Desk - ' + caseNumber + ' - ' + caseSubject + ' status had been changed to Resolved',
             html: `Dear ` + assignedGroup + `</br></br>
 
-            This is to acknowledge  the receipt of a reported case</br>
-            We will have it checked and updates will be provided once available.</br></br>
+            This is to acknowledge that `+ statusChanger + ` had changed the case ` + caseNumber + ` status to be resolved</br></br>
             
             Ticket type : `+ serviceName + `</br>
             Reference Number : `+ caseNumber + `</br>

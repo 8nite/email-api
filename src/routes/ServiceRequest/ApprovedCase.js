@@ -19,23 +19,15 @@ router.post('/', async (req, res) => {
         const Justification = mappedFields['Justification']
         const statusChanger = req.body.user.name
         const userName = mappedFields['Submitter'][0].match(/(.*) \(.*\) \(([-A-Z0-9]*)\)$/)[1]
+        let service
+        try {
+            service = mappedFields['Service Request Items'][0].match(/(.*) \(([-A-Z0-9]*)\)$/)[1]
+        } catch {}
+        try {
+            service = mappedFields['Account System'][0].match(/(.*) \(([-A-Z0-9]*)\)$/)[1]
+        } catch {}
 
-        let approvers = null
-        if (req.body.issue.fields.status.name.toUpperCase() === 'Pending for 1st Approval'.toUpperCase()) {
-            approvers = mappedFields['1st level Approval'].map((item) => {
-                return item.emailAddress
-            })
-        }
-        else if (req.body.issue.fields.status.name.toUpperCase() === 'Pending for 2nd Approval'.toUpperCase()) {
-            approvers = mappedFields['2nd level Approval'].map((item) => {
-                return item.emailAddress
-            })
-        }
-
-        if (!approvers) {
-            return
-        }
-        const to = approvers
+        const to = req.body.issue.fields.reporter.emailAddress
         const cc = ['hgctoc@hgc.com.hk', '008OPS@hgc.com.hk', 'hgcitsd@hgc.com.hk']
         const bcc = []
 
@@ -48,17 +40,15 @@ router.post('/', async (req, res) => {
                 to: to,
                 cc: cc,
                 bcc,
-                subject: 'HGC Service Desk - ' + caseNumber + ' - ' + caseSubject + ' is pending on your approval',
-                html: `Dear Approvers,</br></br>
+                subject: 'HGC Service Desk - ' + caseNumber + ' - ' + caseSubject + ' had been approved',
+                html: `Dear ` + userName + `,</br></br>
 
-            This is to inform you that a case is pending on your approval</br></br>
+                This is to acknowledge that your request had been approved by ` + statusChanger + `</br></br>
             
             Ticket type : `+ serviceName + `</br>
             Reference Number : `+ caseNumber + `</br>
             Summary : `+ caseSubject + `</br>
-            Service : `+ mappedFields['Service Request Items'][0].match(/(.*) \(([-A-Z0-9]*)\)$/)[1] + `</br>
-            Justification : ` + (Justification || '') + `</br>
-            Requestor : `+ userName + `</br></br>
+            Service : `+ service + `</br></br>
             
             Please do not hesitate to contact us at 2128 2666 or hgctoc@hgc.com.hk if any further questions or inquires regarding your ticket</br>
             This is an auto notification sent from system, please do not reply this email.</br></br>

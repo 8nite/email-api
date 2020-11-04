@@ -17,8 +17,10 @@ import ServiceRequestOpenCase from './ServiceRequest/OpenCase'
 import ServiceRequestCancelCase from './ServiceRequest/CancelCase'
 import ServiceRequestResolveCase from './ServiceRequest/ResolveCase'
 import ServiceRequestApprovalCase from './ServiceRequest/ApprovalCase'
+import ServiceRequestApprovedCase from './ServiceRequest/ApprovedCase'
 import ServiceRequestRejectedCase from './ServiceRequest/RejectedCase'
 import ITDevOpenCase from './ITDev/OpenCase'
+import ITDevCancelCase from './ITDev/CancelCase'
 
 var router = express.Router();
 
@@ -44,9 +46,11 @@ router.use('/ServiceRequest/OpenCase', ServiceRequestOpenCase);
 router.use('/ServiceRequest/CancelCase', ServiceRequestCancelCase);
 router.use('/ServiceRequest/ResolveCase', ServiceRequestResolveCase);
 router.use('/ServiceRequest/ApprovalCase', ServiceRequestApprovalCase);
+router.use('/ServiceRequest/ApprovedCase', ServiceRequestApprovedCase);
 router.use('/ServiceRequest/RejectedCase', ServiceRequestRejectedCase);
 
 router.use('/ITDev/OpenCase', ITDevOpenCase);
+router.use('/ITDev/CancelCase', ITDevCancelCase);
 
 
 module.exports = router;

@@ -47,10 +47,10 @@ router.post('/', async (req, res) => {
                 to: to,
                 cc: cc,
                 bcc,
-                subject: 'HGC Service Desk - ' + caseNumber + ' - ' + caseSubject + ' had been assigned to you',
+                subject: 'HGC Service Desk - ' + caseNumber + ' - ' + caseSubject + ' status had been changed to Cancelled',
                 html: `Dear ` + assignedGroup + `</br></br>
 
-                This is to inform you that a case is assigned to you</br></br>
+                This is to acknowledge that `+ statusChanger + ` had changed the case ` + caseNumber + ` status to be cancelled</br></br>
             
             Ticket type : `+ serviceName + `</br>
             Reference Number : `+ caseNumber + `</br>
