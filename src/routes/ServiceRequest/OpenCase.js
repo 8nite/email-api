@@ -10,20 +10,17 @@ var router = express.Router();
 router.post('/', async (req, res) => {
     res.send('done')
     setTimeout(async function () {
-        const mappedFields = await issueNames(req.body.issue.key).fields
+        let mappedFields = await issueNames(req.body.issue.key)
+        mappedFields = mappedFields.fields
 
         const caseNumber = req.body.issue.key
         const serviceName = req.body.issue.fields.issuetype.name
         const caseSubject = req.body.issue.fields.summary
         const caseDescription = req.body.issue.fields.description
         const statusChanger = req.body.issue.fields.reporter.name
-        const submitterInsightId = mappedFields['Submitter'][0].match(/\(([-A-Z0-9]*)\)$/)[1]
-        const userName = await getEmails('HGC', 'AD_USERS', 'Key', submitterInsightId, 'givenName')
+        const userName = mappedFields['Submitter'][0].match(/(.*) \(.*\) \(([-A-Z0-9]*)\)$/)[1]
 
-        let assignedGroup = mappedFields['Assigned Group'][0].match(/(.*) \(([-A-Z0-9]*)\)$/)[1]
-        if (mappedFields['Customer Request Type'].requestType.name == 'Report Issues') {
-            assignedGroup = mappedFields['2nd Tier Support'][0].match(/(.*) \(([-A-Z0-9]*)\)$/)[1]
-        }
+        const assignedGroup = mappedFields['Assigned Group'][0].match(/(.*) \(([-A-Z0-9]*)\)$/)[1]
         const to = await getEmails('HGC', 'SelfServiceSupportUser', 'SelfServiceSupportTeam', assignedGroup, 'Name')
         const cc = ['hgctoc@hgc.com.hk', '008OPS@hgc.com.hk', 'hgcitsd@hgc.com.hk']
         const bcc = []
@@ -37,10 +34,11 @@ router.post('/', async (req, res) => {
                 to: to,
                 cc: cc,
                 bcc,
-                subject: 'HGC Service Desk - ' + caseNumber + ' - ' + caseSubject + ' had been assigned to you',
-                html: `Dear ` + assignedGroup + `</br></br>
+                subject: 'HGC Service Desk - ' + caseNumber + ' - ' + caseSubject + ' had been created',
+                html: `Dear ` + userName + `</br></br>
 
-            This is to inform you that a case is assigned to you</br></br>
+            This is to acknowledge  the receipt of a reported case</br>
+            We will have it checked and updates will be provided once available.</br></br>
             
             Ticket type : `+ serviceName + `</br>
             Reference Number : `+ caseNumber + `</br>

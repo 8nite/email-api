@@ -54,3 +54,14 @@ export const getFieldMapping = (async (fields, ret) => {
         return ret
     })
 })
+
+export const issueNames = (async (key, ret) => {
+    const options = {
+        method: 'get',
+        uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/get/jira/issue/issueNames?issueId=' + key,
+        json: true
+    }
+    return await rp(options).then((ret) => {
+        return ret
+    })
+})

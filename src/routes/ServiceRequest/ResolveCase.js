@@ -33,10 +33,10 @@ router.post('/', async (req, res) => {
             to: to,
             cc: cc,
             bcc,
-            subject: 'HGC Service Desk - ' + caseNumber + ' - ' + caseSubject + ' status had been changed to Cancelled',
+            subject: 'HGC Service Desk - ' + caseNumber + ' - ' + caseSubject + ' status had been changed to Resolved',
             html: `Dear ` + userName + `</br></br>
 
-            This is to acknowledge that ` + statusChanger + ` had changed the case  ` + caseNumber + ` status to be cancelled</br></br>
+            This is to acknowledge that ` + statusChanger + ` had changed the case  ` + caseNumber + ` status to be resolved</br></br>
             
             Ticket type : `+ serviceName + `</br>
             Reference Number : `+ caseNumber + `</br>
@@ -50,38 +50,6 @@ router.post('/', async (req, res) => {
         }
     }
     rp(emailOptions)
-
-    const to2 = await getEmails('HGC', 'SelfServiceSupportUser', 'SelfServiceSupportTeam', assignedGroup, 'Name')
-    const cc2 = ['hgctoc@hgc.com.hk', '008OPS@hgc.com.hk', 'hgcitsd@hgc.com.hk']
-    const bcc2 = []
-
-    const emailOptions2 = {
-        method: 'POST',
-        uri: 'http://' + process.env.LOCALHOST + ':' + process.env.PORT + '/emailapi/email',
-        json: true,
-        body: {
-            from: process.env.DEFUALTSENDER,
-            to: to2,
-            cc: cc2,
-            bcc: bcc2,
-            subject: 'HGC Service Desk - ' + caseNumber + ' - ' + caseSubject + ' status had been changed to Cancelled',
-            html: `Dear ` + assignedGroup + `</br></br>
-
-            This is to acknowledge  the receipt of a reported case</br>
-            We will have it checked and updates will be provided once available.</br></br>
-            
-            Ticket type : `+ serviceName + `</br>
-            Reference Number : `+ caseNumber + `</br>
-            Summary : `+ caseSubject + `</br>
-            Service : `+ mappedFields['Category'][0].match(/(.*) \(([-A-Z0-9]*)\)$/)[1] + `</br></br>
-            
-            Please do not hesitate to contact us at 2128 2666 or hgctoc@hgc.com.hk if any further questions or inquires regarding your ticket</br>
-            This is an auto notification sent from system, please do not reply this email.</br></br>
-            
-            HGC TOC`
-        }
-    }
-    rp(emailOptions2)
 })
 
 module.exports = router;
