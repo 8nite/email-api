@@ -45,33 +45,75 @@ router.post('/', async (req, res) => {
             //Add support team for each request type
             try {
                 let supportTeam
-                if (issusWithNames.fields['Issue Type'].name !== 'Incident' || issusWithNames.fields['Customer Request Type'].requestType.name != 'Report Issues') {
-                    let ITSystemInsightId
-                    if (issusWithNames.fields['Customer Request Type'].requestType.name == 'Service Request') {
-                        ITSystemInsightId = issusWithNames.fields['Service Request Items'][0].match(/\(([-A-Z0-9]*)\)$/)[1]
+
+                try {
+                    if (issusWithNames.fields['Issue Type'].name !== 'Incident' || issusWithNames.fields['Customer Request Type'].requestType.name != 'Report Issues') {
+                        let ITSystemInsightId
+                        if (issusWithNames.fields['Customer Request Type'].requestType.name == 'Service Request') {
+                            ITSystemInsightId = issusWithNames.fields['Service Request Items'][0].match(/\(([-A-Z0-9]*)\)$/)[1]
+                            console.log(ITSystemInsightId)
+
+                            options2 = {
+                                uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/get/jira/object/keyAttributeValue?Key=' + ITSystemInsightId + '&returnAttribute=Service Request Support Team',
+                                json: true
+                            }
+
+                            supportTeam = await rp(options2)
+                        }
+                        else if (issusWithNames.fields['Customer Request Type'].requestType.name == 'Account and Access') {
+                            ITSystemInsightId = issusWithNames.fields['Account System'][0].match(/\(([-A-Z0-9]*)\)$/)[1]
+                            console.log(ITSystemInsightId)
+
+                            options2 = {
+                                uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/get/jira/object/keyAttributeValue?Key=' + ITSystemInsightId + '&returnAttribute=Account and Access Support Team',
+                                json: true
+                            }
+
+                            supportTeam = await rp(options2)
+                        }
+                    }
+                    else {
+                        ITSystemInsightId = issusWithNames.fields['Category'][0].match(/\(([-A-Z0-9]*)\)$/)[1]
                         console.log(ITSystemInsightId)
 
                         options2 = {
-                            uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/get/jira/object/keyAttributeValue?Key=' + ITSystemInsightId + '&returnAttribute=Support Team',
+                            uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/get/jira/object/keyAttributeValue?Key=' + ITSystemInsightId + '&returnAttribute=Report Issue Support Team',
                             json: true
                         }
 
-                        supportTeam = 'SW-SS ' + await rp(options2)
+                        supportTeam = await rp(options2)
                     }
-                    else if (issusWithNames.fields['Customer Request Type'].requestType.name == 'Account and Access') {
-                        ITSystemInsightId = issusWithNames.fields['Account System'][0].match(/\(([-A-Z0-9]*)\)$/)[1]
-                        console.log(ITSystemInsightId)
+                } catch { }
 
-                        options2 = {
-                            uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/get/jira/object/keyAttributeValue?Key=' + ITSystemInsightId + '&returnAttribute=Support Team',
-                            json: true
+                if (!supportTeam || supportTeam === '') {
+                    if (issusWithNames.fields['Issue Type'].name !== 'Incident' || issusWithNames.fields['Customer Request Type'].requestType.name != 'Report Issues') {
+                        let ITSystemInsightId
+                        if (issusWithNames.fields['Customer Request Type'].requestType.name == 'Service Request') {
+                            ITSystemInsightId = issusWithNames.fields['Service Request Items'][0].match(/\(([-A-Z0-9]*)\)$/)[1]
+                            console.log(ITSystemInsightId)
+
+                            options2 = {
+                                uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/get/jira/object/keyAttributeValue?Key=' + ITSystemInsightId + '&returnAttribute=Support Team',
+                                json: true
+                            }
+
+                            supportTeam = 'SW-SS ' + await rp(options2)
                         }
+                        else if (issusWithNames.fields['Customer Request Type'].requestType.name == 'Account and Access') {
+                            ITSystemInsightId = issusWithNames.fields['Account System'][0].match(/\(([-A-Z0-9]*)\)$/)[1]
+                            console.log(ITSystemInsightId)
 
-                        supportTeam = 'AA-SS ' + await rp(options2)
+                            options2 = {
+                                uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/get/jira/object/keyAttributeValue?Key=' + ITSystemInsightId + '&returnAttribute=Support Team',
+                                json: true
+                            }
+
+                            supportTeam = 'AA-SS ' + await rp(options2)
+                        }
                     }
-                }
-                else {
-                    supportTeam = 'EUC'// + await rp(options2)
+                    else {
+                        supportTeam = 'EUC'// + await rp(options2)
+                    }
                 }
                 console.log('setting assign group: ' + supportTeam)
 
@@ -303,8 +345,9 @@ router.post('/', async (req, res) => {
             //clone fields
             console.log('Start Cloning Fields')
             try {
+                let options
                 if (issusWithNames.fields['Customer Request Type'].requestType.name == 'Account and Access') {
-                    let options = {
+                    options = {
                         method: 'POST',
                         uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/get/jira/issue/CustomFieldID',
                         body: { name: 'NeedDevelopment' },//'Creator User Info' },
@@ -359,15 +402,45 @@ router.post('/', async (req, res) => {
                     }
 
                     rp(options)
-                }
-                else {
-                    let options = {
+
+                    options = {
                         method: 'POST',
                         uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/set/jira/issue/CloneInsightToField',
                         body: {
                             updateIssue: {
                                 issueId: req.body.issue.key,
-                                fieldName: 'Request Type',
+                                fieldName: 'Account System',
+                                attributeName: 'need1stApproval',
+                                replaceFieldName: 'need1stApproval'
+                            }
+                        },
+                        json: true
+                    }
+                    rp(options)
+
+                    options = {
+                        method: 'POST',
+                        uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/set/jira/issue/CloneInsightToField',
+                        body: {
+                            updateIssue: {
+                                issueId: req.body.issue.key,
+                                fieldName: 'Account System',
+                                attributeName: 'need2ndApproval',
+                                replaceFieldName: 'need2ndApproval'
+                            }
+                        },
+                        json: true
+                    }
+                    rp(options)
+                }
+                else {
+                    options = {
+                        method: 'POST',
+                        uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/set/jira/issue/CloneInsightToField',
+                        body: {
+                            updateIssue: {
+                                issueId: req.body.issue.key,
+                                fieldName: 'Service Request Items',
                                 attributeName: 'NeedDevelopment',
                                 replaceFieldName: 'NeedDevelopment'
                             }
@@ -382,7 +455,7 @@ router.post('/', async (req, res) => {
                         body: {
                             updateIssue: {
                                 issueId: req.body.issue.key,
-                                fieldName: 'Request Type',
+                                fieldName: 'Service Request Items',
                                 attributeName: 'NeedUAT',
                                 replaceFieldName: 'NeedUAT'
                             }
@@ -390,37 +463,38 @@ router.post('/', async (req, res) => {
                         json: true
                     }
                     rp(options)
-                }
 
-                let options = {
-                    method: 'POST',
-                    uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/set/jira/issue/CloneInsightToField',
-                    body: {
-                        updateIssue: {
-                            issueId: req.body.issue.key,
-                            fieldName: 'Service Request Items',
-                            attributeName: 'need1stApproval',
-                            replaceFieldName: 'need1stApproval'
-                        }
-                    },
-                    json: true
-                }
-                rp(options)
 
-                options = {
-                    method: 'POST',
-                    uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/set/jira/issue/CloneInsightToField',
-                    body: {
-                        updateIssue: {
-                            issueId: req.body.issue.key,
-                            fieldName: 'Service Request Items',
-                            attributeName: 'need2ndApproval',
-                            replaceFieldName: 'need2ndApproval'
-                        }
-                    },
-                    json: true
+                    options = {
+                        method: 'POST',
+                        uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/set/jira/issue/CloneInsightToField',
+                        body: {
+                            updateIssue: {
+                                issueId: req.body.issue.key,
+                                fieldName: 'Service Request Items',
+                                attributeName: 'need1stApproval',
+                                replaceFieldName: 'need1stApproval'
+                            }
+                        },
+                        json: true
+                    }
+                    rp(options)
+
+                    options = {
+                        method: 'POST',
+                        uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/set/jira/issue/CloneInsightToField',
+                        body: {
+                            updateIssue: {
+                                issueId: req.body.issue.key,
+                                fieldName: 'Service Request Items',
+                                attributeName: 'need2ndApproval',
+                                replaceFieldName: 'need2ndApproval'
+                            }
+                        },
+                        json: true
+                    }
+                    rp(options)
                 }
-                rp(options)
             } catch (e) { console.log(e) }
         }
         else if (req.body.issue.fields.project.name.search('IT Development') >= 0) {
@@ -433,7 +507,7 @@ router.post('/', async (req, res) => {
                     issue: req.body.issue
                 }
             }
-
+            console.log("Calling ITDEV OpenCase email...")
             rp(openCase)
         }
         else if (req.body.issue.fields.project.name.search('Internal Civil Work Quotation') >= 0) {

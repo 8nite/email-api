@@ -10,15 +10,13 @@ var router = express.Router();
 router.post('/', async (req, res) => {
     res.send('done')
     setTimeout(async function () {
-        const mappedFields = await issueNames(req.body.issue.key).fields
+        console.log('Sending Email for ' + req.body.issue.key)
+        let mappedFields = await issueNames(req.body.issue.key)
+        mappedFields = mappedFields.fields
 
         const caseNumber = req.body.issue.key
         const serviceName = req.body.issue.fields.issuetype.name
         const caseSubject = req.body.issue.fields.summary
-        const caseDescription = req.body.issue.fields.description
-        const statusChanger = req.body.issue.fields.reporter.name
-        const submitterInsightId = mappedFields['Submitter'][0].match(/\(([-A-Z0-9]*)\)$/)[1]
-        const userName = await getEmails('HGC', 'AD_USERS', 'Key', submitterInsightId, 'givenName')
         let service
         try {
             service = mappedFields['Category'][0].match(/(.*) \(([-A-Z0-9]*)\)$/)[1]
@@ -31,7 +29,7 @@ router.post('/', async (req, res) => {
         } catch {}
 
         let assignedGroup = mappedFields['Assigned Group'][0].match(/(.*) \(([-A-Z0-9]*)\)$/)[1]
-        if (mappedFields['Customer Request Type'].requestType.name == 'Report Issues') {
+        if (mappedFields['2nd Tier Support'] && mappedFields['2nd Tier Support'].length > 1) {
             assignedGroup = mappedFields['2nd Tier Support'][0].match(/(.*) \(([-A-Z0-9]*)\)$/)[1]
         }
         const to = await getEmails('HGC', 'SelfServiceSupportUser', 'SelfServiceSupportTeam', assignedGroup, 'Name')
@@ -64,7 +62,7 @@ router.post('/', async (req, res) => {
             }
         }
         rp(emailOptions)
-    }, 180000);
+    }, 5000);
 })
 
 module.exports = router;
