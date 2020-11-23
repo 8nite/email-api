@@ -13,4 +13,4 @@ RUN cd /app/email-api && \
 WORKDIR /app/email-api/
 EXPOSE 0.0.0.0:3000:3000
 ENV LD_LIBRARY_PATH /opt/oracle/instantclient_19_6 && node ./dist-server/app
-CMD ["npm", "server"]
+CMD ["npm", "start"]
