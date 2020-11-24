@@ -27,9 +27,14 @@ router.post('/', async (req, res) => {
             })
         }
         else if (req.body.issue.fields.status.name.toUpperCase() === 'Pending for 2nd Approval'.toUpperCase()) {
-            approvers = mappedFields['2nd level Approval'].map((item) => {
-                return item.emailAddress
-            })
+            try {
+                approvers = mappedFields['2nd level Approval'].map((item) => {
+                    return item.emailAddress
+                })
+            }
+            catch {
+                return
+            }
         }
 
         if (!approvers) {
