@@ -6,7 +6,7 @@
     "start": "git pull && npm-run-all build server",
     "startdev": "git pull && npm-run-all build serverdev",
     "dev": "nodemon --watch src/ --exec yarn startdev",
-    "server": "forever ./dist-server/app >> server.log 2>&1",
+    "server": "forever start ./dist-server/app >> server.log 2>&1",
     "serverdev": "node ./dist-server/app",
     "transpile": "babel ./src --out-dir dist-server",
     "clean": "rimraf dist-server",
