@@ -17,7 +17,9 @@ router.post('/', async (req, res) => {
     const caseSubject = req.body.issue.fields.summary
     const caseDescription = req.body.issue.fields.description
     const statusChanger = req.body.user.name
+    try {
     const userName = mappedFields['Submitter'][0].match(/(.*) \(.*\) \(([-A-Z0-9]*)\)$/)[1]
+    } catch {}
     let service
     try {
         service = mappedFields['Service Request Items'][0].match(/(.*) \(([-A-Z0-9]*)\)$/)[1]
