@@ -28,13 +28,8 @@ router.post('/', async (req, res) => {
     //Send to Email
     let to = [assignee]
 
-<<<<<<< HEAD
     let cc = await getEmails('TOC','Assignment User', 'Group', assignmentGroup, 'Email')
     cc = cc.concat(await getEmails('TOC','Assignment User', 'Group', 'TOC', 'Email'))
-=======
-    let cc = await getEmails('AssignmentUser', 'Group', assignmentGroup, 'Email')
-    cc = cc.concat(await getEmails('AssignmentUser', 'Group', 'TOC', 'Email'))
->>>>>>> master
 
     if (typeof caseSeverity == 'string' && (caseSeverity.search('2') >= 0 || caseSeverity.search('1') >= 0)) {
         cc.push('BILLY.KWOK@hgc.com.hk')
