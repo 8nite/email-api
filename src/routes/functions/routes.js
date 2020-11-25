@@ -1,7 +1,7 @@
 import express from 'express'
 import rp from 'request-promise'
 import queryString from 'query-string'
-import { getEmails, getFieldMapping } from '../../functions/jiraAPI'
+import { getEmails, getFieldMapping, getInsight } from '../../functions/jiraAPI'
 
 require('dotenv').config()
 
@@ -577,7 +577,7 @@ router.post('/', async (req, res) => {
         console.log('Assignee changed: ' + req.body.changelog)
         const options = {
             method: 'POST',
-            uri: 'http://' + process.env.LOCALHOST + ':' + process.env.PORT + '/TOC/Assignment',
+            uri: 'http://' + process.env.LOCALHOST + ':' + process.env.PORT + '/emailapi/TOC/Assignment',
             json: true,
             body: req.body
         }

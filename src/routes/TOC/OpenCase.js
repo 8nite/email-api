@@ -1,7 +1,7 @@
 import express from 'express'
 import rp from 'request-promise'
 import queryString from 'query-string'
-import { getEmails, getFieldMapping } from '../../functions/jiraAPI'
+import { getEmails, getFieldMapping, getInsight } from '../../functions/jiraAPI'
 
 require('dotenv').config()
 
@@ -13,7 +13,7 @@ router.post('/', async (req, res) => {
     try {
         const options = {
             method: 'POST',
-            uri: 'http://' + process.env.LOCALHOST + ':' + process.env.PORT + '/TOC/Assignment',
+            uri: 'http://' + process.env.LOCALHOST + ':' + process.env.PORT + '/emailapi/TOC/Assignment',
             json: true,
             body: req.body
         }
@@ -23,7 +23,6 @@ router.post('/', async (req, res) => {
     } catch {}
     
     const mappedFields = await getFieldMapping(req.body.issue.fields)
-
     const caseNumber = req.body.issue.key
     const serviceName = req.body.issue.fields.issuetype.name
     const caseSubject = req.body.issue.fields.summary
@@ -34,7 +33,7 @@ router.post('/', async (req, res) => {
     const companyEmail = await getEmails('TOC','User Profile', 'Username', mappedFields['Contact - Company Reference'][0].match(/(.*) \([-A-Z0-9]*\)$/)[1], 'Email')
     const serviceManager = mappedFields['Service Manager'].name
 
-    //console.log(mappedFields['Assignment Group'][0].match(/(.*) \([-A-Z0-9]*\)$/)[1])
+    //console.log(mappedFields['AssignmentGroup'][0].match(/(.*) \([-A-Z0-9]*\)$/)[1])
 
     //Send to Email
     let to = companyEmail
@@ -71,7 +70,7 @@ Reference Number : `+ caseNumber + `</br>
 Summary : ` + caseSubject + `</br>
 Service : `+ serviceName + `</br></br>
 
-<a href="`+ issueLink + 'browse/' + caseNumber + `">View request</a></br></br>
+<a href="https://hgcitd.atlassian.net/browse/` + caseNumber + `">View request</a></br></br>
 
 Please do not hesitate to contact us at 2128 2666 or hgctoc@hgc.com.hk if any further questions or inquires regarding your ticket
 This is an auto notification sent from system, please do not reply this email.</br></br>

@@ -39,6 +39,8 @@ router.post('/', async (req, res) => {
 })
 
 router.get('/get', async (req, res) => {
+    res.send('0')
+    return
     let ret = await readNextEmail()
     if (ret && ret.body) {
         res.send(ret.body)
@@ -47,7 +49,7 @@ router.get('/get', async (req, res) => {
     }
 })
 
-router.post('/sendToCustomer', async (req, res) => {
+router.post('/sendToCustomerCarrierInternal', async (req, res) => {
     const from = process.env.IBVSDFROM
     const to = req.body.to
     const cc = req.body.cc
@@ -63,7 +65,7 @@ router.post('/sendToCustomer', async (req, res) => {
     */
     const emailOptions = {
         method: 'POST',
-        uri: 'http://' + process.env.LOCALHOST + ':' + process.env.PORT + '/email',
+        uri: 'http://' + process.env.LOCALHOST + ':' + process.env.PORT + '/emailapi/email',
         json: true,
         body: {
             from: from,

@@ -1,7 +1,7 @@
 import express from 'express'
 import rp from 'request-promise'
 import queryString from 'query-string'
-import { getEmails, getFieldMapping } from '../../functions/jiraAPI'
+import { getEmails, getFieldMapping, getInsight } from '../../functions/jiraAPI'
 
 require('dotenv').config()
 
@@ -14,10 +14,16 @@ router.post('/', async (req, res) => {
     const caseNumber = req.body.issue.key
     const serviceName = req.body.issue.fields.issuetype.name
     const caseSubject = req.body.issue.fields.summary
-    const caseSeverity = mappedFields['Severity'].value
-    const assignmentGroup = mappedFields['Assignment Group'][0].match(/(.*) \([-A-Z0-9]*\)$/)[1]
-    const assignee = mappedFields.Assignee[0].split(' ')[0]
-    const issueLink = mappedFields['Issue Type'].self.match(/[a-z]+:\/\/[^\/]+\//)[0]
+    const caseSeverity = mappedFields['Severity']    
+    let assignmentGroup = ''
+    try {
+        assignmentGroup = await getInsight(mappedFields['Assignee'][0].originId.split('_')[1], 'Group') //mappedFields['AssignmentGroup'][0].match(/(.*) \([-A-Z0-9]*\)$/)[1]
+    } catch { }
+    let assignee = ''
+    try {
+        assignee = await getInsight(mappedFields['Assignee'][0].originId.split('_')[1], 'Email')//mappedFields.Assignee[0].split(' ')[0]
+    } catch { }
+    const issueLink = mappedFields['Issue Type'].name //mappedFields['Issue Type'].self.match(/[a-z]+:\/\/[^\/]+\//)[0]
 
     //Send to Email
     let to = [assignee]
@@ -50,7 +56,7 @@ Service : ` + serviceName + `</br>
 Assignment Group : ` + assignmentGroup + `</br>
 Assignee: ` + assignee + `</br></br>
 
-<a href="`+ issueLink + 'browse/' + caseNumber + `">View request</a></br></br>
+<a href="https://hgcitd.atlassian.net/browse/` + caseNumber + `">View request</a></br></br>
 
 Please do not hesitate to contact us at 2128 2666 or hgctoc@hgc.com.hk if any further questions or inquires regarding your ticket
 This is an auto notification sent from system, please do not reply this email.</br></br>
