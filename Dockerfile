@@ -8,7 +8,7 @@ RUN mkdir /app && \
   cd /app && \
   git clone https://github.com/herberttung/email-api.git
 RUN cd /app/email-api && \
-  git checkout UAT && \
+  git checkout master && \
   yarn install && \
   yarn build
 WORKDIR /app/email-api/
