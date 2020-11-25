@@ -26,33 +26,20 @@ router.post('/', async (req, res) => {
     const caseNumber = req.body.issue.key
     const serviceName = req.body.issue.fields.issuetype.name
     const caseSubject = req.body.issue.fields.summary
-    let assignmentGroup = ''
-    try {
-        assignmentGroup = await getInsight(mappedFields['Assignee'][0].originId.split('_')[1], 'Group') //mappedFields['AssignmentGroup'][0].match(/(.*) \([-A-Z0-9]*\)$/)[1]
-    } catch { }
-    let assignee = ''
-    try {
-        assignee = await getInsight(mappedFields['Assignee'][0].originId.split('_')[1], 'Email')//mappedFields.Assignee[0].split(' ')[0]
-    } catch { }
-    const issueLink = mappedFields['Issue Type'].name //mappedFields['Issue Type'].self.match(/[a-z]+:\/\/[^\/]+\//)[0]
-    const status = mappedFields.Status.name
-    const statusChanger = req.body.user.displayName
-    let companyEmail = ''
-    try {
-        companyEmail = await getEmails('UserProfile', 'id', mappedFields['User Information'][0].originId.split('_')[1], 'Email')//await getEmails('UserProfile', 'Username', mappedFields['Contact - Company Reference'][0].match(/(.*) \([-A-Z0-9]*\)$/)[1], 'Email')
-        let serviceManager = ''
-    } catch { }
-    try {
-        serviceManager = await getEmails('ServiceManager', 'id', mappedFields['Service Manager'][0].originId.split('_')[1], 'Email')//mappedFields['ServiceManager'].Email
-    } catch { }
+    const assignmentGroup = mappedFields['Assignment Group'][0].match(/(.*) \([-A-Z0-9]*\)$/)[1]
+    const assignee = mappedFields.Assignee[0].split(' ')[0]
+    const issueLink = mappedFields['Issue Type'].self.match(/[a-z]+:\/\/[^\/]+\//)[0]
+    const userEmail = req.body.user.emailAddress
+    const companyEmail = await getEmails('TOC','User Profile', 'Username', mappedFields['Contact - Company Reference'][0].match(/(.*) \([-A-Z0-9]*\)$/)[1], 'Email')
+    const serviceManager = mappedFields['Service Manager'].name
 
     //console.log(mappedFields['AssignmentGroup'][0].match(/(.*) \([-A-Z0-9]*\)$/)[1])
 
     //Send to Email
     let to = companyEmail
 
-    //let cc = await getEmails('AssignmentUser', 'Group', assignmentGroup, 'Email')
-    //cc = cc.concat(await getEmails('AssignmentUser', 'Group', 'TOC', 'Email'))
+    //let cc = await getEmails('TOC','Assignment User', 'Group', assignmentGroup, 'Email')
+    //cc = cc.concat(await getEmails('TOC','Assignment User', 'Group', 'TOC', 'Email'))
     //cc.push('BILLY.KWOK@hgc.com.hk')
 
     let cc = 'hgctoc@hgc.com.hk'
@@ -62,7 +49,7 @@ router.post('/', async (req, res) => {
         bcc.push(serviceManager)
     }
     bcc.push('BILLY.KWOK@hgc.com.hk')
-    bcc = bcc.concat(await getEmails('AssignmentUser', 'Group', 'TOC', 'Email'))
+    bcc = bcc.concat(await getEmails('TOC','Assignment User', 'Group', 'TOC', 'Email'))
 
     const emailOptions = {
         method: 'POST',

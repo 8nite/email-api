@@ -3,26 +3,38 @@ import queryString from 'query-string'
 
 require('dotenv').config()
 
-export const getEmails = (async (sourceType, sourceAttr, attr, ret) => {
+export const getEmails = (async (sourceProject, sourceType, sourceAttr, attr, ret) => {
     return new Promise(function (resolve, reject) {
+        if (sourceAttr === 'Key') {
+            const getAssGrpOptions = {
+                uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/get/jira/object/keyAttributeValue?Key=' + attr + '&returnAttribute=' + ret,
+                json: true
+            }
 
-        let query = {
-            objectSchemaName: 'TOC',
-            objectTypeName: sourceType,
-            findAttribute: sourceAttr,
-            findValue: attr,
-            returnAttribute: ret
+            rp(getAssGrpOptions)
+                .then((objects) => {
+                    resolve([objects])
+                })
         }
+        else {
+            let query = {
+                objectSchemaName: sourceProject,
+                objectTypeName: sourceType,
+                findAttribute: sourceAttr,
+                findValue: attr,
+                returnAttribute: ret
+            }
 
-        const getAssGrpOptions = {
-            uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/get/jira/object/attributeValue?' + queryString.stringify(query),
-            json: true
+            const getAssGrpOptions = {
+                uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/get/jira/object/attributeValue?' + queryString.stringify(query),
+                json: true
+            }
+
+            rp(getAssGrpOptions)
+                .then((objects) => {
+                    resolve(objects)
+                })
         }
-
-        rp(getAssGrpOptions)
-            .then((objects) => {
-                resolve(objects)
-            })
     })
 })
 
@@ -43,24 +55,13 @@ export const getFieldMapping = (async (fields, ret) => {
     })
 })
 
-export const getInsight = (async (id, field) => {
-    return new Promise(function (resolve, reject) {
-
-        let query = {
-            objectId: id
-        }
-
-        const getAssGrpOptions = {
-            uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/get/jira/object/object?' + queryString.stringify(query),
-            json: true
-        }
-
-        rp(getAssGrpOptions)
-            .then((objects) => {
-                if (objects[field])
-                    resolve(objects[field])
-                else
-                    resolve('')
-            })
+export const issueNames = (async (key, ret) => {
+    const options = {
+        method: 'get',
+        uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/get/jira/issue/issueNames?issueId=' + key,
+        json: true
+    }
+    return await rp(options).then((ret) => {
+        return ret
     })
 })

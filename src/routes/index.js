@@ -1,28 +1,56 @@
 import express from 'express'
 import email from './functions/email'
 import routes from './functions/routes'
-import OpenCase from './TOC/OpenCase'
-import CancelCase from './TOC/CancelCase'
-import ResolveCase from './TOC/ResolveCase'
-import Assignment from './TOC/Assignment'
-import ResolveTimeSLABreached from './TOC/ResolveTimeSLABreached'
-import ResolveTimeSLAReminder from './TOC/ResolveTimeSLAReminder'
-import ResponseTimeSLABreached from './TOC/ResponseTimeSLABreached'
-import ResponseTimeSLAReminder from './TOC/ResponseTimeSLAReminder'
+import recheckJobs from './functions/recheckJobs'
+import TOCOpenCase from './TOC/OpenCase'
+import TOCCancelCase from './TOC/CancelCase'
+import TOCResolveCase from './TOC/ResolveCase'
+import TOCAssignment from './TOC/Assignment'
+import TOCResolveTimeSLABreached from './TOC/ResolveTimeSLABreached'
+import TOCResolveTimeSLAReminder from './TOC/ResolveTimeSLAReminder'
+import TOCResponseTimeSLABreached from './TOC/ResponseTimeSLABreached'
+import TOCResponseTimeSLAReminder from './TOC/ResponseTimeSLAReminder'
+import PCFaultOpenCase from './PCFault/OpenCase'
+import PCFaultCancelCase from './PCFault/CancelCase'
+import PCFaultResolveCase from './PCFault/ResolveCase'
+import ServiceRequestOpenCase from './ServiceRequest/OpenCase'
+import ServiceRequestCancelCase from './ServiceRequest/CancelCase'
+import ServiceRequestResolveCase from './ServiceRequest/ResolveCase'
+import ServiceRequestApprovalCase from './ServiceRequest/ApprovalCase'
+import ServiceRequestApprovedCase from './ServiceRequest/ApprovedCase'
+import ServiceRequestRejectedCase from './ServiceRequest/RejectedCase'
+import ITDevOpenCase from './ITDev/OpenCase'
+import ITDevCancelCase from './ITDev/CancelCase'
 
 var router = express.Router();
 
 router.use('/routes', routes)
+router.use('/recheckJobs', recheckJobs)
 
 router.use('/email', email);
 
-router.use('/TOC/OpenCase', OpenCase);
-router.use('/TOC/CancelCase', CancelCase);
-router.use('/TOC/ResolveCase', ResolveCase);
-router.use('/TOC/Assignment', Assignment);
-router.use('/TOC/ResolveTimeSLABreached', ResolveTimeSLABreached);
-router.use('/TOC/ResolveTimeSLAReminder', ResolveTimeSLAReminder);
-router.use('/TOC/ResponseTimeSLABreached', ResponseTimeSLABreached);
-router.use('/TOC/ResponseTimeSLAReminder', ResponseTimeSLAReminder);
+router.use('/TOC/OpenCase', TOCOpenCase);
+router.use('/TOC/CancelCase', TOCCancelCase);
+router.use('/TOC/ResolveCase', TOCResolveCase);
+router.use('/TOC/Assignment', TOCAssignment);
+router.use('/TOC/ResolveTimeSLABreached', TOCResolveTimeSLABreached);
+router.use('/TOC/ResolveTimeSLAReminder', TOCResolveTimeSLAReminder);
+router.use('/TOC/ResponseTimeSLABreached', TOCResponseTimeSLABreached);
+router.use('/TOC/ResponseTimeSLAReminder', TOCResponseTimeSLAReminder);
+
+router.use('/PCFault/OpenCase', PCFaultOpenCase);
+router.use('/PCFault/CancelCase', PCFaultCancelCase);
+router.use('/PCFault/ResolveCase', PCFaultResolveCase);
+
+router.use('/ServiceRequest/OpenCase', ServiceRequestOpenCase);
+router.use('/ServiceRequest/CancelCase', ServiceRequestCancelCase);
+router.use('/ServiceRequest/ResolveCase', ServiceRequestResolveCase);
+router.use('/ServiceRequest/ApprovalCase', ServiceRequestApprovalCase);
+router.use('/ServiceRequest/ApprovedCase', ServiceRequestApprovedCase);
+router.use('/ServiceRequest/RejectedCase', ServiceRequestRejectedCase);
+
+router.use('/ITDev/OpenCase', ITDevOpenCase);
+router.use('/ITDev/CancelCase', ITDevCancelCase);
+
 
 module.exports = router;
