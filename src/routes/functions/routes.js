@@ -556,6 +556,47 @@ router.post('/', async (req, res) => {
             }
             rp(options3)
         }
+        else if (req.body.issue.fields.project.name.search('HR') >= 0) {
+            console.log('HR: getting issue info...')
+            let options2 = {
+                uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/get/jira/issue/issueNames?issueId=' + req.body.issue.key,
+                json: true
+            }
+            let issusWithNames = await rp(options2)
+
+            //Add support team for each request type
+            try {     
+                if (issusWithNames.fields['Issue Type'].name === 'Task') {                    
+                    const CostCenter = [issusWithNames.fields['Cost Center Group'][0].match(/(.*) \(([-A-Z0-9]*)\)$/)[1]]
+                    console.log('getting group ' + CostCenter)    
+
+                    let param2 = {
+                        objectSchemaName: 'HGC',
+                        objectTypeName: 'Cost Center Admins',
+                        findAttribute: 'Group',
+                        findValue: CostCenter,
+                        returnAttribute: 'Name'
+                    }
+                    options2 = {
+                        uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/get/jira/object/attributeValue?' + queryString.stringify(param2),
+                        json: true
+                    }
+                    const CostCenterAdmins = await rp(options2)
+                    console.log(CostCenterAdmins)
+
+                    CostCenterAdmins.forEach((admin) => {
+                        let options = {
+                            uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/set/jira/issue/addWatcher?issueId=' + req.body.issue.key + '&name=' + admin,
+                            json: true
+                        }
+                        rp(options)
+                    });                   
+                }
+            }
+            catch(e) {
+                console.log(e)
+            }
+        }
     }
     else if (req.body.webhookEvent == 'jira:issue_updated') {
         console.log('An issue was updated: ' + req.body.issue.key + ' on project: ')
