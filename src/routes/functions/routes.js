@@ -565,10 +565,10 @@ router.post('/', async (req, res) => {
             let issusWithNames = await rp(options2)
 
             //Add support team for each request type
-            try {     
-                if (issusWithNames.fields['Issue Type'].name === 'Task') {                    
+            try {
+                if (issusWithNames.fields['Issue Type'].name === 'Task') {
                     const CostCenter = [issusWithNames.fields['Cost Center Group'][0].match(/(.*) \(([-A-Z0-9]*)\)$/)[1]]
-                    console.log('getting group ' + CostCenter)    
+                    console.log('getting group ' + CostCenter)
 
                     let param2 = {
                         objectSchemaName: 'HGC',
@@ -590,10 +590,10 @@ router.post('/', async (req, res) => {
                             json: true
                         }
                         rp(options)
-                    });                   
+                    });
                 }
             }
-            catch(e) {
+            catch (e) {
                 console.log(e)
             }
         }
@@ -612,6 +612,84 @@ router.post('/', async (req, res) => {
             }
 
             rp(cancelCase)
+        }
+        else if (req.body.issue.fields.project.name.search('HR') >= 0 && req.body.issue.fields.status.name.toUpperCase() === "PENDING FOR DEPARTMENT TO EDIT") {
+            //check if exsist
+            let option = {
+                uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/sql/getTableData?' +
+                    'user=' + process.env.HRDBUSER +
+                    'password=' + process.env.HRDBPASSWORD +
+                    'connString=' + process.env.HRDBCONNSTRING +
+                    'tableName=' + process.env.HRDBPROFILETABLE,
+                json: true
+            }
+
+            rp(option).then(($) => {
+                if ($ && $.rows && $.rows.every((row) => { return row.REFNO !== req.body.issue.key })) {
+                    let optionsNames = {
+                        uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/get/jira/issue/issueNames?issueId=' + req.body.issue.key,
+                        json: true
+                    }
+                    let issusWithNames = await rp(optionsNames)
+
+                    const option2 = {
+                        method: 'POST',
+                        uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/sql/insertSQL',
+                        body: {
+                            sql: {
+                                user: process.env.HRDBUSER,
+                                password: process.env.HRDBPASSWORD,
+                                connString: process.env.HRDBCONNSTRING,
+                                tableName: process.env.HRDBPROFILETABLE,
+                                fields: ['REFNO', 'STAFFID', 'TITLE', 'FUNCTIONALTITLE', 'TITLECHI', 'MOBILENUMBER', 'MOBILEPHONEMODEL', 'REPORTDUTYDATE', 'STAFFALIAS', 'STAFFNAMECHI', 'GRADE', 'COSTCENTER', 'CONTRACTENDDATE', 'COMPANYCODE', 'HHRDREMARK', 'STAFFTYPE1', 'STAFFINITIAL', 'TEMPFIRST', 'TEMPLAST', 'STAFFFIRSTNAME', 'STAFFLASTNAME', 'REGION', 'WORKLOCATION'],
+                                values: [req.body.issue.key, issusWithNames['Staff ID'], issusWithNames['Contractual Position (Eng)'], issusWithNames['Functional Title (Eng)'], '', issusWithNames['Mobile Number'], issusWithNames['Mobile Phone Model'],
+                                issusWithNames['Report Duty Date'],issusWithNames['Alias (Eng)'],issusWithNames['Staff Name (Chi)'],issusWithNames['Staff Grade'].value, issusWithNames.fields['Cost Center Group'][0].match(/(.*) \(([-A-Z0-9]*)\)$/)[1],
+                                issusWithNames['Contract End Date'], 'HGC','', '', issusWithNames['First Name (Eng)'].substring(0,1) + issusWithNames['Last Name (Eng)'].substring(0,1), '', '', issusWithNames['First Name (Eng)'], issusWithNames['Last Name (Eng)'], '', issusWithNames['Work Location']]
+                            }
+                        },
+                        json: true
+                    }
+                    rp(option2)
+                }
+            })
+        }
+        else if (req.body.issue.fields.project.name.search('HR') >= 0 && req.body.issue.fields.status.name.toUpperCase() === "IT JOB") {
+            //check if exsist
+            let option = {
+                uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/sql/getTableData?' +
+                    'user=' + process.env.HRDBUSER +
+                    'password=' + process.env.HRDBPASSWORD +
+                    'connString=' + process.env.HRDBCONNSTRING +
+                    'tableName=' + process.env.HRDBREQUESTTABLE,
+                json: true
+            }
+
+            rp(option).then(($) => {
+                if ($ && $.rows && $.rows.every((row) => { return row.REFNO !== req.body.issue.key })) {
+                    let optionsNames = {
+                        uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/get/jira/issue/issueNames?issueId=' + req.body.issue.key,
+                        json: true
+                    }
+                    let issusWithNames = await rp(optionsNames)
+
+                    const option2 = {
+                        method: 'POST',
+                        uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/sql/insertSQL',
+                        body: {
+                            sql: {
+                                user: process.env.HRDBUSER,
+                                password: process.env.HRDBPASSWORD,
+                                connString: process.env.HRDBCONNSTRING,
+                                tableName: process.env.HRDBPROFILETABLE,
+                                fields: ['REFNO', 'DEPTAPPROVBY'],
+                                values: [req.body.issue.key, issusWithNames['Updated'].substring(0,10)]
+                            }
+                        },
+                        json: true
+                    }
+                    rp(option2)
+                }
+            })
         }
     }
     else if (req.body.issue.fields.project.name.search('TOC') >= 0 && req.body.changelog.items.some((item) => item.field === 'Assignee')) {
