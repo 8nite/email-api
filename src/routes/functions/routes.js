@@ -497,6 +497,84 @@ router.post('/', async (req, res) => {
                 }
             } catch (e) { console.log(e) }
         }
+        else if (req.body.issue.fields.project.name.search('PC Requisition') >= 0) {
+            //Add Submitter to issue
+
+            //get issue fields
+            console.log('getting issue info...')
+            let options2 = {
+                uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/get/jira/issue/issueNames?issueId=' + req.body.issue.key,
+                json: true
+            }
+            let issusWithNames = await rp(options2)
+
+            if (issusWithNames.fields['Customer Request Type'].requestType.name === 'PC Requisition') {
+                //Add 1st Approver to issue
+                console.log('Starting for 1st approval')
+                try {
+
+                    const approver1list = [issusWithNames.fields['Department Approver'][0].match(/(.*) \(([-A-Z0-9]*)\)$/)[1]]
+
+                    let options = {
+                        method: 'POST',
+                        uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/get/jira/issue/CustomFieldID',
+                        body: { name: '1st level Approval' },//'Creator User Info' },
+                        json: true
+                    }
+
+                    let customFieldID = await rp(options)
+                        .then(($) => {
+                            return $
+                        })
+
+                    options = {
+                        method: 'POST',
+                        uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/set/jira/issue/updateIssue',
+                        body: {
+                            "updateIssue": {
+                                "issueId": req.body.issue.key,
+                                "fields": {
+                                    [customFieldID]: approver1list.map((email) => { return { name: email } })
+                                }
+                            }
+                        },
+                        json: true
+                    }
+
+                    rp(options)
+                } catch (e) { console.log(e) }
+                //Add UAT Sign off Approver to issue
+                try {
+                    let options = {
+                        method: 'POST',
+                        uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/get/jira/issue/CustomFieldID',
+                        body: { name: 'UAT Sign Off Approver' },//'Creator User Info' },
+                        json: true
+                    }
+
+                    let customFieldID = await rp(options)
+                        .then(($) => {
+                            return $
+                        })
+                    options = {
+                        method: 'POST',
+                        uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/set/jira/issue/updateIssue',
+                        body: {
+                            "updateIssue": {
+                                "issueId": req.body.issue.key,
+                                "fields": {
+                                    [customFieldID]: { name: req.body.issue.fields.reporter.emailAddress }
+                                }
+                            }
+                        },
+                        json: true
+                    }
+
+                    rp(options)
+                } catch (e) { console.log(e) }
+
+            }
+        }
         else if (req.body.issue.fields.project.name.search('IT Development') >= 0) {
 
             const openCase = {
@@ -584,13 +662,42 @@ router.post('/', async (req, res) => {
                     const CostCenterAdmins = await rp(options2)
                     console.log(CostCenterAdmins)
 
-                    CostCenterAdmins.forEach((admin) => {
+                    /*CostCenterAdmins.forEach((admin) => {
                         let options = {
-                            uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/set/jira/issue/addWatcher?issueId=' + req.body.issue.key + '&name=' + admin,
+                            uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/set/jira/issue/addParticipant?issueId=' + req.body.issue.key + '&name=' + admin,
                             json: true
                         }
                         rp(options)
-                    });
+                    });*/
+
+
+                    let options = {
+                        method: 'POST',
+                        uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/get/jira/issue/CustomFieldID',
+                        body: { name: 'Request participants' },//'Creator User Info' },
+                        json: true
+                    }
+
+                    let customFieldID = await rp(options)
+                        .then(($) => {
+                            return $
+                        })
+
+                    options = {
+                        method: 'POST',
+                        uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/set/jira/issue/updateIssue',
+                        body: {
+                            "updateIssue": {
+                                "issueId": req.body.issue.key,
+                                "fields": {
+                                    [customFieldID]: CostCenterAdmins.map((email) => { return { name: email } })
+                                }
+                            }
+                        },
+                        json: true
+                    }
+
+                    rp(options)
                 }
             }
             catch (e) {
@@ -615,23 +722,31 @@ router.post('/', async (req, res) => {
         }
         else if (req.body.issue.fields.project.name.search('HR') >= 0 && req.body.issue.fields.status.name.toUpperCase() === "PENDING FOR DEPARTMENT TO EDIT") {
             //check if exsist
+            console.log('HR:NewHire:checking insert to profile')
             let option = {
                 uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/sql/getTableData?' +
                     'user=' + process.env.HRDBUSER +
-                    'password=' + process.env.HRDBPASSWORD +
-                    'connString=' + process.env.HRDBCONNSTRING +
-                    'tableName=' + process.env.HRDBPROFILETABLE,
+                    '&password=' + process.env.HRDBPASSWORD +
+                    '&connString=' + process.env.HRDBCONNSTRING +
+                    '&tableName=' + process.env.HRDBPROFILETABLE,
                 json: true
             }
 
-            rp(option).then(($) => {
+            rp(option).then(async ($) => {
                 if ($ && $.rows && $.rows.every((row) => { return row.REFNO !== req.body.issue.key })) {
+                    console.log('HR:NewHire:refno no existing, will insert now...')
                     let optionsNames = {
                         uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/get/jira/issue/issueNames?issueId=' + req.body.issue.key,
                         json: true
                     }
                     let issusWithNames = await rp(optionsNames)
 
+                    console.group('TO_DATE(\'' + issusWithNames.fields['Report Duty Date'] + '\', \'YYYY-MM-DD\')')
+
+                    let initial = ''
+                    try {
+                        initial = issusWithNames.fields['First Name (Eng)'].substring(0, 1) + issusWithNames.fields['Last Name (Eng)'].substring(0, 1)
+                    } catch { }
                     const option2 = {
                         method: 'POST',
                         uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/sql/insertSQL',
@@ -641,10 +756,56 @@ router.post('/', async (req, res) => {
                                 password: process.env.HRDBPASSWORD,
                                 connString: process.env.HRDBCONNSTRING,
                                 tableName: process.env.HRDBPROFILETABLE,
-                                fields: ['REFNO', 'STAFFID', 'TITLE', 'FUNCTIONALTITLE', 'TITLECHI', 'MOBILENUMBER', 'MOBILEPHONEMODEL', 'REPORTDUTYDATE', 'STAFFALIAS', 'STAFFNAMECHI', 'GRADE', 'COSTCENTER', 'CONTRACTENDDATE', 'COMPANYCODE', 'HHRDREMARK', 'STAFFTYPE1', 'STAFFINITIAL', 'TEMPFIRST', 'TEMPLAST', 'STAFFFIRSTNAME', 'STAFFLASTNAME', 'REGION', 'WORKLOCATION'],
-                                values: [req.body.issue.key, issusWithNames['Staff ID'], issusWithNames['Contractual Position (Eng)'], issusWithNames['Functional Title (Eng)'], '', issusWithNames['Mobile Number'], issusWithNames['Mobile Phone Model'],
-                                issusWithNames['Report Duty Date'],issusWithNames['Alias (Eng)'],issusWithNames['Staff Name (Chi)'],issusWithNames['Staff Grade'].value, issusWithNames.fields['Cost Center Group'][0].match(/(.*) \(([-A-Z0-9]*)\)$/)[1],
-                                issusWithNames['Contract End Date'], 'HGC','', '', issusWithNames['First Name (Eng)'].substring(0,1) + issusWithNames['Last Name (Eng)'].substring(0,1), '', '', issusWithNames['First Name (Eng)'], issusWithNames['Last Name (Eng)'], '', issusWithNames['Work Location']]
+                                fields: [
+                                    'REFNO',
+                                    'STAFFID',
+                                    'TITLE',
+                                    'FUNCTIONALTITLE',
+                                    'TITLECHI',
+                                    'MOBILENUMBER',
+                                    'MOBILEPHONEMODEL',
+                                    'REPORTDUTYDATE',
+                                    'STAFFALIAS',
+                                    'STAFFNAMECHI',
+                                    'GRADE',
+                                    'COSTCENTER',
+                                    'CONTRACTENDDATE',
+                                    'COMPANYCODE',
+                                    'HHRDREMARK',
+                                    'STAFFTYPE1',
+                                    'STAFFINITIAL',
+                                    'TEMPFIRST',
+                                    'TEMPLAST',
+                                    'STAFFFIRSTNAME',
+                                    'STAFFLASTNAME',
+                                    'REGION',
+                                    'WORKLOCATION'
+                                ],
+                                values: [
+                                    req.body.issue.key,
+                                    issusWithNames.fields['Staff ID'] || '',
+                                    issusWithNames.fields['Contractual Position (Eng)'] || '',
+                                    issusWithNames.fields['Functional Title (Eng)'] || '',
+                                    '',
+                                    issusWithNames.fields['Mobile Number'] || '',
+                                    issusWithNames.fields['Mobile Phone Model'] || '',
+                                    issusWithNames.fields['Report Duty Date'] ? issusWithNames.fields['Report Duty Date'] + ' 00:00:00' : '',
+                                    issusWithNames.fields['Alias (Eng)'] || '',
+                                    issusWithNames.fields['Staff Name (Chi)'] || '',
+                                    (issusWithNames.fields['Staff Grade'] && issusWithNames.fields['Staff Grade'].value ? issusWithNames.fields['Staff Grade'].value : ''),
+                                    issusWithNames.fields['Cost Center Group'][0].match(/(.*) \(([-A-Z0-9]*)\)$/)[1],
+                                    issusWithNames.fields['Contract End Date'] ? issusWithNames.fields['Contract End Date'] + ' 00:00:00' : '',
+                                    'HGC',
+                                    '',
+                                    '',
+                                    initial,
+                                    '',
+                                    '',
+                                    issusWithNames.fields['First Name (Eng)'] || '',
+                                    issusWithNames.fields['Last Name (Eng)'] || '',
+                                    '',
+                                    issusWithNames.fields['Work Location'] || ''
+                                ]
                             }
                         },
                         json: true
@@ -658,13 +819,13 @@ router.post('/', async (req, res) => {
             let option = {
                 uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/sql/getTableData?' +
                     'user=' + process.env.HRDBUSER +
-                    'password=' + process.env.HRDBPASSWORD +
-                    'connString=' + process.env.HRDBCONNSTRING +
-                    'tableName=' + process.env.HRDBREQUESTTABLE,
+                    '&password=' + process.env.HRDBPASSWORD +
+                    '&connString=' + process.env.HRDBCONNSTRING +
+                    '&tableName=' + process.env.HRDBREQUESTTABLE,
                 json: true
             }
 
-            rp(option).then(($) => {
+            rp(option).then(async ($) => {
                 if ($ && $.rows && $.rows.every((row) => { return row.REFNO !== req.body.issue.key })) {
                     let optionsNames = {
                         uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/get/jira/issue/issueNames?issueId=' + req.body.issue.key,
@@ -680,9 +841,9 @@ router.post('/', async (req, res) => {
                                 user: process.env.HRDBUSER,
                                 password: process.env.HRDBPASSWORD,
                                 connString: process.env.HRDBCONNSTRING,
-                                tableName: process.env.HRDBPROFILETABLE,
+                                tableName: process.env.HRDBREQUESTTABLE,
                                 fields: ['REFNO', 'DEPTAPPROVBY'],
-                                values: [req.body.issue.key, issusWithNames['Updated'].substring(0,10)]
+                                values: [req.body.issue.key, issusWithNames.fields['Updated']]
                             }
                         },
                         json: true
