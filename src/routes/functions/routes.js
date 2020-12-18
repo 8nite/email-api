@@ -497,7 +497,11 @@ router.post('/', async (req, res) => {
                 }
             } catch (e) { console.log(e) }
         }
-        else if (req.body.issue.fields.project.name.search('PC Requisition') >= 0) {
+        else if (
+                req.body.issue.fields.project.name.search('PC Requisition') >= 0 ||
+                req.body.issue.fields.project.name.search('Access Card Requisition') >= 0 ||
+                req.body.issue.fields.project.name.search('Telephone Job Requisition') >= 0
+            ) {
             //Add Submitter to issue
 
             //get issue fields
@@ -507,7 +511,8 @@ router.post('/', async (req, res) => {
                 json: true
             }
             let issusWithNames = await rp(options2)
-
+            console.log(issusWithNames.fields['Customer Request Type'])
+            
             if (
                 issusWithNames.fields['Customer Request Type'].requestType.name === 'PC Requisition' ||
                 issusWithNames.fields['Customer Request Type'].requestType.name === 'Access Card Requisition' ||
@@ -577,6 +582,44 @@ router.post('/', async (req, res) => {
                     rp(options)
                 } catch (e) { console.log(e) }
 
+            }
+            if (
+                issusWithNames.fields['Customer Request Type'].requestType.name === 'Access Card Requisition'
+            ) {
+                //Add 1st Approver to issue
+                console.log('Starting for 1st approval')
+                try {
+
+                    const approver1list = [issusWithNames.fields['Additional Access Approver Object'][0].match(/(.*) \(([-A-Z0-9]*)\)$/)[1]]
+
+                    let options = {
+                        method: 'POST',
+                        uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/get/jira/issue/CustomFieldID',
+                        body: { name: 'Additional Access Approver' },//'Creator User Info' },
+                        json: true
+                    }
+
+                    let customFieldID = await rp(options)
+                        .then(($) => {
+                            return $
+                        })
+
+                    options = {
+                        method: 'POST',
+                        uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/set/jira/issue/updateIssue',
+                        body: {
+                            "updateIssue": {
+                                "issueId": req.body.issue.key,
+                                "fields": {
+                                    [customFieldID]: approver1list.map((email) => { return { name: email } })
+                                }
+                            }
+                        },
+                        json: true
+                    }
+
+                    rp(options)
+                } catch (e) { console.log(e) }
             }
         }
         else if (req.body.issue.fields.project.name.search('IT Development') >= 0) {
@@ -925,6 +968,8 @@ router.post('/', async (req, res) => {
                 }
                 let issusWithNames = await rp(options2)
 
+                console.log('processing data')
+
                 if (issusWithNames.fields['Issue Type'].name === 'Service Request' && issusWithNames.fields['Status'].name === 'Resolved') {
                     let body = {
                         sql: {
@@ -940,18 +985,6 @@ router.post('/', async (req, res) => {
                             values: [req.body.issue.key]
                         }
                     }
-
-                    body.sql.fields.push('PROJECT_NAME')
-                    body.sql.values.push(issusWithNames.fields['Customer Request Type'].requestType.name)
-
-                    body.sql.fields.push('REQUEST_DATE')
-                    body.sql.values.push(issusWithNames.fields['Created'])
-
-                    body.sql.fields.push('CREATE_DATE')
-                    body.sql.values.push(issusWithNames.fields['Created'])
-
-                    body.sql.fields.push('UPDATE_DATE')
-                    body.sql.values.push(issusWithNames.fields['Updated'])
 
                     body.sql.fields = body.sql.fields.concat(Object.keys(issusWithNames.fields).map((name) => { return name.toUpperCase().replace(' ', '_') }))
                     body.sql.values = body.sql.values.concat(Object.keys(issusWithNames.fields).map((itemName) => {
@@ -980,13 +1013,81 @@ router.post('/', async (req, res) => {
                     }))
                     //console.log(body)
 
+                    body.sql.fields.push('PROJECT_NAME')
+                    body.sql.values.push(issusWithNames.fields['Customer Request Type'].requestType.name)
+
+                    body.sql.fields.push('REQUEST_DATE')
+                    body.sql.values.push(issusWithNames.fields['Created'])
+
+                    body.sql.fields.push('CREATE_DATE')
+                    body.sql.values.push(issusWithNames.fields['Created'])
+
+                    body.sql.fields.push('UPDATE_DATE')
+                    body.sql.values.push(issusWithNames.fields['Updated'])
+
+                    body.sql.fields.push('PROV_OTHERS')
+                    body.sql.values.push(issusWithNames.fields['Provisioning-Others'])
+
+                    body.sql.fields.push('FIBRE_CORE')
+                    body.sql.values.push(issusWithNames.fields['Fibre Core Required'].value)
+
+                    body.sql.fields.push('C_FW')
+                    body.sql.values.push(issusWithNames.fields['Civil - F/W in Meter'])
+
+                    body.sql.fields.push('C_CW')
+                    body.sql.values.push(issusWithNames.fields['Civil - C/W in Meter'])
+
+                    body.sql.fields.push('C_JOIN_BOX')
+                    body.sql.values.push(issusWithNames.fields['Civil - No. of Joint Box'])
+
+                    body.sql.fields.push('CALE_LEN')
+                    body.sql.values.push(issusWithNames.fields['Cable - Length in Meter'])
+
+                    body.sql.fields.push('LEAD_TIME_MTH')
+                    body.sql.values.push(issusWithNames.fields['Lead Time (Mths)'])
+
+                    body.sql.fields.push('DFA')
+                    body.sql.values.push(issusWithNames.fields['DFA'])
+
+                    body.sql.fields.push('CIVIL_COST')
+                    body.sql.values.push(parseFloat(issusWithNames.fields['Civil Cost']))
+
+                    body.sql.fields.push('EXT_CABLE_COST')
+                    body.sql.values.push(parseFloat(issusWithNames.fields['External Cable Cost']))
+
+                    body.sql.fields.push('ADJ_CIVIL_COST')
+                    body.sql.values.push(parseFloat(issusWithNames.fields['Adjust Civil Cost (HK$)']))
+
+                    body.sql.fields.push('ADJ_CABLE_COST')
+                    body.sql.values.push(parseFloat(issusWithNames.fields['Adjust Cable Cost (HK$)']))
+
+                    body.sql.fields.push('BW_COST')
+                    body.sql.values.push(parseFloat(issusWithNames.fields['Blockwiring Cost (HK$)']))
+
+                    body.sql.fields.push('NNID_REPLY_DATE')
+                    body.sql.values.push(issusWithNames.fields['NNID Reply Date'])
+
+                    body.sql.fields.push('EXPIRE_DATE')
+                    body.sql.values.push(issusWithNames.fields['Quotaion expire date'].toString() + ' 00:00:00')
+
+                    body.sql.fields.push('REMARKS')
+                    body.sql.values.push(issusWithNames.fields['Remark'])
+
+                    console.log(body.sql.fields)
+                    console.log(body.sql.values)
+
+                    console.log(body.sql.fields.length)
+                    console.log(body.sql.values.length)
+
                     let optionsInsert = {
                         method: 'POST',
                         uri: 'http://' + process.env.LOCALHOST + ':' + process.env.JIRAAPIPORT + '/sql/insertSQL',
                         body,
                         json: true
                     }
-                    await rp(optionsInsert)
+                    rp(optionsInsert).catch((e) => {
+                        //console.log(e)
+                    })
                 }
             } catch (e) {
                 console.log(e)
