@@ -1073,6 +1073,10 @@ router.post('/', async (req, res) => {
                     body.sql.fields.push('REMARKS')
                     body.sql.values.push(issusWithNames.fields['Remark'])
 
+                    body.sql.fields.push('BUILDING_ID')
+                    body.sql.values.push(issusWithNames.fields['Building ID'].toString())
+
+
                     console.log(body.sql.fields)
                     console.log(body.sql.values)
 
