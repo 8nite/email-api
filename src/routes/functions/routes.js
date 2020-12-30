@@ -583,7 +583,7 @@ router.post('/', async (req, res) => {
 
             }
             if (
-                issusWithNames.fields['Customer Request Type'].requestType.name === 'Access Card Requisition'
+                req.body.issue.fields.project.name.search('Access Card Requisition') >= 0
             ) {
                 //Add 1st Approver to issue
                 console.log('Starting for 1st approval')
