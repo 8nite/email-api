@@ -125,7 +125,7 @@ function onListening() {
   debug('Listening on ' + bind);
 }
 
-cron.schedule('30 */10 * * * *', () => {
+cron.schedule('30 */3 * * * *', () => {
   rp('http://' + process.env.LOCALHOST + ':' + process.env.PORT + '/emailapi/recheckJobs')
 });
 //rp('http://127.0.0.1:3001/email/get')

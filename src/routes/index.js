@@ -22,6 +22,8 @@ import ServiceRequestRejectedCase from './ServiceRequest/RejectedCase'
 import ITDevOpenCase from './ITDev/OpenCase'
 import ITDevCancelCase from './ITDev/CancelCase'
 import HRNewHireOpenCase from './HR/NewHireOpenCase'
+import AlertB4SiteVisit from './ICW/AlertB4SiteVisit'
+import AlertAfterSiteVisit from './ICW/AlertAfterSiteVisit'
 
 var router = express.Router();
 
@@ -54,6 +56,9 @@ router.use('/ITDev/OpenCase', ITDevOpenCase);
 router.use('/ITDev/CancelCase', ITDevCancelCase);
 
 router.use('/HR/NewHireOpenCase', HRNewHireOpenCase);
+
+router.use('/ICW/AlertB4SiteVisit', AlertB4SiteVisit);
+router.use('/ICW/AlertAfterSiteVisit', AlertAfterSiteVisit);
 
 
 module.exports = router;
