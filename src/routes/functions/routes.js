@@ -514,9 +514,8 @@ router.post('/', async (req, res) => {
             console.log(issusWithNames.fields['Customer Request Type'])
             
             if (
-                issusWithNames.fields['Customer Request Type'].requestType.name === 'PC Requisition' ||
-                issusWithNames.fields['Customer Request Type'].requestType.name === 'Access Card Requisition' ||
-                issusWithNames.fields['Customer Request Type'].requestType.name === 'Telephone Job Requisition'
+                issusWithNames.fields['Customer Request Type'].requestType.name.search('PC Requisition') >= 0 ||
+                !(req.body.issue.fields.project.name.search('PC Requisition') >= 0)
             ) {
                 //Add 1st Approver to issue
                 console.log('Starting for 1st approval')
