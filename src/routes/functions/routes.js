@@ -610,7 +610,7 @@ router.post('/', async (req, res) => {
                             "updateIssue": {
                                 "issueId": req.body.issue.key,
                                 "fields": {
-                                    [customFieldID]: approver1list.map((email) => { return { name: email } })
+                                    [customFieldID]: approver1list.map((email) => { return { name: email } })[0]
                                 }
                             }
                         },
