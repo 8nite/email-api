@@ -1012,6 +1012,9 @@ router.post('/', async (req, res) => {
                     }))
                     //console.log(body)
 
+                    body.sql.fields.push('REQUEST_NO')
+                    body.sql.values.push(req.body.issue.key)
+
                     body.sql.fields.push('PROJECT_NAME')
                     body.sql.values.push(issusWithNames.fields['Customer Request Type'].requestType.name)
 
