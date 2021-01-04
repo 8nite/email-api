@@ -20,8 +20,8 @@ router.post('/', async (req, res) => {
         rp(options).then(($) => {
             res.send($)
         })
-    } catch {}
-    
+    } catch { }
+
     const mappedFields = await getFieldMapping(req.body.issue.fields)
     const caseNumber = req.body.issue.key
     const serviceName = req.body.issue.fields.issuetype.name
@@ -30,7 +30,13 @@ router.post('/', async (req, res) => {
     const assignee = mappedFields.Assignee[0].split(' ')[0]
     const issueLink = mappedFields['Issue Type'].self.match(/[a-z]+:\/\/[^\/]+\//)[0]
     const userEmail = req.body.user.emailAddress
-    const companyEmail = await getEmails('TOC','User Profile', 'Username', mappedFields['Contact - Company Reference'][0].match(/(.*) \([-A-Z0-9]*\)$/)[1], 'Email')
+    let companyEmail = []
+    try {
+        companyEmail = await getEmails('TOC', 'User Profile', 'Company', mappedFields['Company'][0].match(/(.*) \([-A-Z0-9]*\)$/)[1], 'Email')
+    }
+    catch (e) {
+        console.log(e)
+    }
     const serviceManager = mappedFields['Service Manager'].name
 
     //console.log(mappedFields['AssignmentGroup'][0].match(/(.*) \([-A-Z0-9]*\)$/)[1])
@@ -49,7 +55,7 @@ router.post('/', async (req, res) => {
         bcc.push(serviceManager)
     }
     bcc.push('BILLY.KWOK@hgc.com.hk')
-    bcc = bcc.concat(await getEmails('TOC','Assignment User', 'Group', 'TOC', 'Email'))
+    bcc = bcc.concat(await getEmails('TOC', 'Assignment User', 'Group', 'TOC', 'Email'))
 
     const emailOptions = {
         method: 'POST',

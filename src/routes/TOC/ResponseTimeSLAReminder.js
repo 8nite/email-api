@@ -14,7 +14,10 @@ router.post('/', async (req, res) => {
     const caseNumber = req.body.issue.key
     const serviceName = req.body.issue.fields.issuetype.name
     const caseSubject = req.body.issue.fields.summary
-    const caseSeverity = mappedFields['Severity']    
+    let caseSeverity = mappedFields['Severity']
+    try {
+        caseSeverity = caseSeverity.value
+    } catch {} 
     let assignmentGroup = ''
     try {
         assignmentGroup = await getInsight(mappedFields['Assignee'][0].originId.split('_')[1], 'Group') //mappedFields['AssignmentGroup'][0].match(/(.*) \([-A-Z0-9]*\)$/)[1]
