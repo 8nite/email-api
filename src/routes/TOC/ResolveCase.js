@@ -33,7 +33,10 @@ router.post('/', async (req, res) => {
     catch (e) {
         console.log(e)
     }
-    const serviceManager = mappedFields['Service Manager'].name
+    let serviceManager = ''
+    try {
+        serviceManager = mappedFields['Service Manager'].name
+    } catch {}
 
     //console.log(mappedFields['Assignment Group'][0].match(/(.*) \([-A-Z0-9]*\)$/)[1])
 
