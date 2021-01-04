@@ -18,7 +18,7 @@ router.post('/', async (req, res) => {
             body: req.body
         }
         rp(options).then(($) => {
-            res.send($)
+            //res.send($)
         })
     } catch { }
 
