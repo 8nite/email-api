@@ -96,7 +96,7 @@ router.post('/', async (req, res) => {
             Summary : ` + caseSubject + `</br>
             Service : `+ serviceName + `</br></br>` + body + `</br></br>
 
-            <a href="https://hgcitd.atlassian.net/browse/` + caseNumber + `">View request</a></br></br></body>
+            <a href="https://support.hgc.com.hk/browse/` + caseNumber + `">View request</a></br></br></body>
 
 `
         }

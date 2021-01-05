@@ -74,7 +74,7 @@ Reference Number : `+ caseNumber + `</br>
 Summary : ` + caseSubject + `</br>
 Service : `+ serviceName + `</br></br>
 
-<a href="https://hgcitd.atlassian.net/browse/` + caseNumber + `">View request</a></br></br>
+<a href="https://support.hgc.com.hk/browse/` + caseNumber + `">View request</a></br></br>
 
 Please do not hesitate to contact us at 2128 2666 or hgctoc@hgc.com.hk if any further questions or inquires regarding your ticket
 This is an auto notification sent from system, please do not reply this email.</br></br>
