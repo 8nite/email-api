@@ -1099,6 +1099,19 @@ router.post('/', async (req, res) => {
                 console.log(e)
             }
         }
+        else if (req.body.issue.fields.project.name.search('Self Service') >= 0) {
+            
+            const AssignVendor = {
+                method: 'POST',
+                uri: 'http://' + process.env.LOCALHOST + ':' + process.env.PORT + '/emailapi/TOC/AssignVendor',
+                json: true,
+                body: {
+                    issue: req.body.issue
+                }
+            }
+
+            rp(AssignVendor)
+        }
     }
     else if (req.body.issue.fields.project.name.search('TOC') >= 0 && req.body.changelog.items.some((item) => item.field === 'Assignee')) {
         console.log('Assignee changed: ' + req.body.changelog)
