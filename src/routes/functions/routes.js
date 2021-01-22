@@ -498,10 +498,10 @@ router.post('/', async (req, res) => {
             } catch (e) { console.log(e) }
         }
         else if (
-                req.body.issue.fields.project.name.search('PC Requisition') >= 0 ||
-                req.body.issue.fields.project.name.search('Access Card Requisition') >= 0 ||
-                req.body.issue.fields.project.name.search('Telephone Job Requisition') >= 0
-            ) {
+            req.body.issue.fields.project.name.search('PC Requisition') >= 0 ||
+            req.body.issue.fields.project.name.search('Access Card Requisition') >= 0 ||
+            req.body.issue.fields.project.name.search('Telephone Job Requisition') >= 0
+        ) {
             //Add Submitter to issue
 
             //get issue fields
@@ -512,7 +512,7 @@ router.post('/', async (req, res) => {
             }
             let issusWithNames = await rp(options2)
             console.log(issusWithNames.fields['Customer Request Type'])
-            
+
             if (
                 issusWithNames.fields['Customer Request Type'].requestType.name.search('PC Requisition') >= 0 ||
                 !(req.body.issue.fields.project.name.search('PC Requisition') >= 0)
@@ -737,7 +737,7 @@ router.post('/', async (req, res) => {
                         })
                     })
                 })
-            } catch(e) { console.log(e) }
+            } catch (e) { console.log(e) }
         }
         else if (req.body.issue.fields.project.name.search('HR') >= 0) {
             console.log('HR: getting issue info...')
@@ -1099,18 +1099,22 @@ router.post('/', async (req, res) => {
                 console.log(e)
             }
         }
-        else if (req.body.issue.fields.project.name.search('Self Service') >= 0) {
-            
-            const AssignVendor = {
-                method: 'POST',
-                uri: 'http://' + process.env.LOCALHOST + ':' + process.env.PORT + '/emailapi/TOC/AssignVendor',
-                json: true,
-                body: {
-                    issue: req.body.issue
+        else if (
+            req.body.issue.fields.project.name.search('Self Service') >= 0 ||
+            req.body.issue.fields.project.name.search('TOCP') >= 0
+        ) {
+            if (req.body.changelog.items.some((item) => (item.field === 'status' && item.toString === 'Vendor In Progress') )) {
+                const AssignVendor = {
+                    method: 'POST',
+                    uri: 'http://' + process.env.LOCALHOST + ':' + process.env.PORT + '/emailapi/TOC/AssignVendor',
+                    json: true,
+                    body: {
+                        issue: req.body.issue
+                    }
                 }
-            }
 
-            rp(AssignVendor)
+                rp(AssignVendor)
+            }
         }
     }
     else if (req.body.issue.fields.project.name.search('TOC') >= 0 && req.body.changelog.items.some((item) => item.field === 'Assignee')) {

@@ -1,7 +1,7 @@
 import express from 'express'
 import rp from 'request-promise'
 import queryString from 'query-string'
-import { getEmails, getFieldMapping, getInsight } from '../../functions/jiraAPI'
+import { getEmails, issueNames, getInsight } from '../../functions/jiraAPI'
 import moment from 'moment-timezone'
 
 require('dotenv').config()
@@ -11,11 +11,18 @@ var router = express.Router();
 router.post('/', async (req, res) => {
     res.send('done')
 
-    const mappedFields = await getFieldMapping(req.body.issue.fields)
+    let mappedFields = await issueNames(req.body.issue.key)
+    mappedFields = mappedFields.fields
+    console.log("mappedFields['Authorized Vendor Personnel']")
+    console.log(mappedFields['Authorized Vendor Personnel'])
     const caseNumber = req.body.issue.key
     const caseSubject = req.body.issue.fields.summary
     const requestor = req.body.issue.fields.reporter.emailAddress
     const requestDate = mappedFields['Created']
+    let accessType = ''
+    try {
+        accessType = mappedFields['Access Type'].value
+    } catch { }
     let serviceManager = ''
     try {
         serviceManager = mappedFields['Service Manager'].name
@@ -55,7 +62,7 @@ router.post('/', async (req, res) => {
         let x = JSON.parse(mappedFields['Authorized Vendor Personnel'])
         x.rows.forEach((row) => {
             if (row.columns.No)
-                personnel += row.columns.No.toString() + '     ' + row.columns['Staff Name'] + '     ' + row.columns['Staff ID or HKID'] + '     ' + row.columns['Company'] + '     ' + row.columns.Rack + '</br>'
+                personnel += row.columns.No.toString() + ',     ' + row.columns['Staff_Name'] + ',     ' + row.columns['Staff_ID_or_HKID'] + ',    ' + row.columns['Company'] + ',     ' + row.columns['Appointed_Duty'] + ',     ' + row.columns.Rack + '<br>'
         })
     } catch (e) { console.log(e) }
 
@@ -85,37 +92,37 @@ router.post('/', async (req, res) => {
             to: to,
             cc: cc,
             bcc,
-            subject: '[Vendor Access] ' + caseNumber + ' Process Request (Data Center Operator) - Email Notification',
+            subject: '[' + accessType + '] ' + caseNumber + ' Process Request (Data Center Operator) - Email Notification',
             html: `
-Dear NOC_WDC ,</br></br>
+Dear NOC_WDC ,<br><br>
 
-Please note that you have a Data Center Site (Vendor Access) Registration task to follow:</br></br>
+Please note that you have a Data Center Site (` + accessType + `) Registration task to follow:<br><br>
 
-Submitted by ` + requestor + ` </br>
-Work Order Number: ` + caseNumber + ` </br>
-Request Date:  ` + moment(requestDate).tz("Asia/Hong_Kong").format('YYYY-MM-DD') + ` </br></br>
-Company Name: HGC Global Communications Limited</br></br>
-Data Center: ` + dataCenter + ` </br>
-Authorizer: ` + authorizerName + ` </br></br>
-Authorizer's Email: ` + authorizerEmail + ` </br></br>
-Office Direct: ` + phone + ` </br>
-Fax: 3157 0400 </br>
-Effective Date: ` + effectiveDate + ` </br>
-Expiration Date: ` + expirationDate + ` </br>
-Remark: ` + remark + ` </br>
-List of Authorized Vendor's Personnel: </br>
-No.     Staff Name      Staff ID / HKID Company Appointed Duty  Authorized Rack </br>
-` + personnel + `</br></br>
+Submitted by Operation <br>
+Work Order Number: ` + caseNumber + ` <br>
+Request Date:  ` + moment(requestDate).tz("Asia/Hong_Kong").format('YYYY-MM-DD') + ` <br>
+Company Name: HGC Global Communications Limited<br>
+Data Center: ` + dataCenter + ` <br>
+Authorizer: ` + authorizerName + ` <br>
+Authorizer's Email: ` + authorizerEmail + ` <br>
+Office Direct: ` + phone + ` <br>
+Fax: 3157 0400 <br>
+Effective Date: ` + effectiveDate + ` <br>
+Expiration Date: ` + expirationDate + ` <br>
+Remark: ` + remark + ` <br>
+List of Authorized Vendor's Personnel: <br>
+No.,     Staff Name,      Staff ID / HKID, Company, Appointed Duty, Authorized Rack <br>
+` + personnel + `<br><br>
 
-Requested By: NSDOOPS </br>
-Requested Date: ` + moment(requestDate).tz("Asia/Hong_Kong").format('YYYY-MM-DD') + ` </br></br>
+Requested By: NSDOOPS <br>
+Requested Date: ` + moment(requestDate).tz("Asia/Hong_Kong").format('YYYY-MM-DD') + ` <br><br>
 
-Approved by Manager (Operation) </br>
-Approved By: ` + authorizerName + ` </br>
-Approved Date: ` + moment.tz("Asia/Hong_Kong").format('YYYY-MM-DD HH:mm') + ` </br></br>
+Approved by Manager (Operation) <br>
+Approved By: ` + authorizerName + ` <br>
+Approved Date: ` + moment.tz("Asia/Hong_Kong").format('YYYY-MM-DD HH:mm') + ` <br><br>
 
 Please do not hesitate to contact us at 2128 2666 or hgctoc@hgc.com.hk if any further questions or inquires regarding your ticket
-This is an auto notification sent from system, please do not reply this email.</br></br>
+This is an auto notification sent from system, please do not reply this email.<br><br>
 
 HGC TOC`
         }
