@@ -11,6 +11,7 @@ import TOCResolveTimeSLAReminder from './TOC/ResolveTimeSLAReminder'
 import TOCResponseTimeSLABreached from './TOC/ResponseTimeSLABreached'
 import TOCResponseTimeSLAReminder from './TOC/ResponseTimeSLAReminder'
 import TOCAssignVendor from './TOC/AssignVendor'
+import TOCAssignVendorApprove from './TOC/AssignVendorApprove'
 import PCFaultOpenCase from './PCFault/OpenCase'
 import PCFaultCancelCase from './PCFault/CancelCase'
 import PCFaultResolveCase from './PCFault/ResolveCase'
@@ -42,6 +43,7 @@ router.use('/TOC/ResolveTimeSLAReminder', TOCResolveTimeSLAReminder);
 router.use('/TOC/ResponseTimeSLABreached', TOCResponseTimeSLABreached);
 router.use('/TOC/ResponseTimeSLAReminder', TOCResponseTimeSLAReminder);
 router.use('/TOC/AssignVendor', TOCAssignVendor);
+router.use('/TOC/AssignVendorApprove', TOCAssignVendorApprove);
 
 router.use('/PCFault/OpenCase', PCFaultOpenCase);
 router.use('/PCFault/CancelCase', PCFaultCancelCase);
