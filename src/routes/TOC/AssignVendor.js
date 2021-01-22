@@ -62,7 +62,7 @@ router.post('/', async (req, res) => {
         let x = JSON.parse(mappedFields['Authorized Vendor Personnel'])
         x.rows.forEach((row) => {
             if (row.columns.No)
-                personnel += row.columns.No.toString() + ',     ' + row.columns['Staff_Name'] + ',     ' + row.columns['Staff_ID_or_HKID'] + ',    ' + row.columns['Company'] + ',     ' + row.columns['Appointed_Duty'] + ',     ' + row.columns.Rack + '<br>'
+                personnel += row.columns.No.toString() + ',     ' + row.columns['Staff_Name'] + ',     ' + row.columns['Staff_ID_or_HKID'] + ',    ' + row.columns['Company'] + ',     ' + row.columns['Appointed_Duty'] + ',     ' + row.columns.Rack + ' <br><br>'
         })
     } catch (e) { console.log(e) }
 
@@ -112,7 +112,7 @@ Effective Date: ` + effectiveDate + ` <br>
 Expiration Date: ` + expirationDate + ` <br>
 Remark: ` + remark + ` <br>
 List of Authorized Vendor's Personnel: <br>
-No.,     Staff Name,      Staff ID / HKID, Company, Appointed Duty, Authorized Rack <br>
+No.,     Staff Name,      Staff ID / HKID, Company, Appointed Duty, Authorized Rack <br><br><br>
 ` + personnel + `<br><br>
 
 Requested By: NSDOOPS <br>

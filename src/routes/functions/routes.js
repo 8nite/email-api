@@ -1101,7 +1101,7 @@ router.post('/', async (req, res) => {
         }
         else if (
             req.body.issue.fields.project.name.search('Self Service') >= 0 ||
-            req.body.issue.fields.project.name.search('TOCP') >= 0
+            req.body.issue.fields.project.name.search('TOC') >= 0
         ) {
             if (req.body.changelog.items.some((item) => (item.field === 'status' && item.toString === 'Vendor In Progress') )) {
                 const AssignVendor = {
