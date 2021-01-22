@@ -72,7 +72,8 @@ router.post('/', async (req, res) => {
     let to = ['hgctoc@hgc.com.hk']
     //console.log(await getEmails('TOC', 'Data Centers', 'Data Center', dataCenter, 'Email'))
     try {
-        to.push(await getEmails('TOC', 'Data Centers', 'Data Center', dataCenter, 'Email'))
+        let DCemail = await getEmails('TOC', 'Data Centers', 'Data Center', dataCenter, 'Email')
+        to.push(DCemail[0])
     } catch (e) { console.log(e) }
 
     //let cc = await getEmails('TOC','Assignment User', 'Group', assignmentGroup, 'Email')
