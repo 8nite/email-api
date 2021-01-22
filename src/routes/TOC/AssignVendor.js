@@ -62,7 +62,7 @@ router.post('/', async (req, res) => {
         let x = JSON.parse(mappedFields['Authorized Vendor Personnel'])
         x.rows.forEach((row) => {
             if (row.columns.No)
-                personnel += row.columns.No.toString() + ',     ' + row.columns['Staff_Name'] + ',     ' + row.columns['Staff_ID_or_HKID'] + ',    ' + row.columns['Company'] + ',     ' + row.columns['Appointed_Duty'] + ',     ' + row.columns.Rack + ' <br><br>'
+                personnel += row.columns.No.toString() + ',     ' + row.columns['Staff_Name'] + ',     ' + row.columns['Staff_ID_or_HKID'] + ',    ' + row.columns['Company'] + ',     ' + row.columns['Appointed_Duty'] + ',     ' + row.columns.Rack + ' <br>'
         })
     } catch (e) { console.log(e) }
 
@@ -95,14 +95,14 @@ router.post('/', async (req, res) => {
             bcc,
             subject: '[' + accessType + '] ' + caseNumber + ' Process Request (Data Center Operator) - Email Notification',
             html: `
-Dear NOC_WDC ,<br><br>
+Dear Support,<br><br>
 
 Please note that you have a Data Center Site (` + accessType + `) Registration task to follow:<br><br>
 
 Submitted by Operation <br>
 Work Order Number: ` + caseNumber + ` <br>
 Request Date:  ` + moment(requestDate).tz("Asia/Hong_Kong").format('YYYY-MM-DD') + ` <br>
-Company Name: HGC Global Communications Limited<br>
+Company Name: HGC Global Communications Limited <br>
 Data Center: ` + dataCenter + ` <br>
 Authorizer: ` + authorizerName + ` <br>
 Authorizer's Email: ` + authorizerEmail + ` <br>
@@ -112,7 +112,7 @@ Effective Date: ` + effectiveDate + ` <br>
 Expiration Date: ` + expirationDate + ` <br>
 Remark: ` + remark + ` <br>
 List of Authorized Vendor's Personnel: <br>
-No.,     Staff Name,      Staff ID / HKID, Company, Appointed Duty, Authorized Rack <br><br><br>
+No.,     Staff Name,      Staff ID / HKID, Company, Appointed Duty, Authorized Rack <br><br>
 ` + personnel + `<br><br>
 
 Requested By: NSDOOPS <br>
@@ -121,6 +121,8 @@ Requested Date: ` + moment(requestDate).tz("Asia/Hong_Kong").format('YYYY-MM-DD'
 Approved by Manager (Operation) <br>
 Approved By: ` + authorizerName + ` <br>
 Approved Date: ` + moment.tz("Asia/Hong_Kong").format('YYYY-MM-DD HH:mm') + ` <br><br>
+
+[Enter Ticket Number: ] <br><br>
 
 Please do not hesitate to contact us at 2128 2666 or hgctoc@hgc.com.hk if any further questions or inquires regarding your ticket
 This is an auto notification sent from system, please do not reply this email.<br><br>
