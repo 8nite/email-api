@@ -93,7 +93,7 @@ router.post('/', async (req, res) => {
             to: to,
             cc: cc,
             bcc,
-            subject: '[' + accessType + '] ' + caseNumber + ' Process Request (Data Center Operator) - Email Notification',
+            subject: '[HGC SD][' + accessType + '] ' + caseNumber + ' Process Request (Data Center Operator) - Email Notification',
             html: `
 Dear Support,<br><br>
 
