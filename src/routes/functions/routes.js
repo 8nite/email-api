@@ -1114,7 +1114,7 @@ router.post('/', async (req, res) => {
                 }
 
                 rp(AssignVendor)
-            } else if (req.body.issue.fields.project.name.search('TOC') >= 0 && req.body.changelog.items.some((item) => (item.field === 'status' && item.toString === 'Arrange Onsite') )) {
+            } else if (req.body.changelog.items.some((item) => (item.field === 'status' && item.toString === 'Arrange Onsite') )) {
                 const AssignVendorApprove = {
                     method: 'POST',
                     uri: 'http://' + process.env.LOCALHOST + ':' + process.env.PORT + '/emailapi/TOC/AssignVendorApprove',
