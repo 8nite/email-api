@@ -60,33 +60,56 @@ router.post('/', async (req, res) => {
     bcc.push('BILLY.KWOK@hgc.com.hk')
     bcc = bcc.concat(await getEmails('TOC', 'Assignment User', 'Group', 'TOC', 'Email'))
 
-    const emailOptions = {
+    let emailOptions = {
         method: 'POST',
         uri: 'http://' + process.env.LOCALHOST + ':' + process.env.PORT + '/emailapi/email',
         json: true,
         body: {
             from: process.env.DEFUALTSENDER,
-            to: to,
-            cc: cc,
-            bcc,
-            subject: caseNumber + " - " + caseSubject + " had been created",
-            html: `Dear All</br></br>
-
-This is to acknowledge  the receipt of a reported case</br>
-We will have it checked and updates will be provided once available.</br></br>
-
-Reference Number : `+ caseNumber + `</br>
-Summary : ` + caseSubject + `</br>
-Service : `+ serviceName + `</br></br>
-
-<a href=` + process.env.URL + `/browse/` + caseNumber + `">View request</a></br></br>
-
-Please do not hesitate to contact us at 2128 2666 or hgctoc@hgc.com.hk if any further questions or inquires regarding your ticket
-This is an auto notification sent from system, please do not reply this email.</br></br>
-
-HGC TOC`
+            subject: caseNumber + " - " + caseSubject + " had been created"
         }
     }
+
+    emailOptions.body.to = to
+    emailOptions.body.cc = []
+    emailOptions.body.bcc = []
+
+    emailOptions.body.html = `Dear All</br></br>
+
+    This is to acknowledge  the receipt of a reported case</br>
+    We will have it checked and updates will be provided once available.</br></br>
+    
+    Reference Number : `+ caseNumber + `</br>
+    Summary : ` + caseSubject + `</br>
+    Service : `+ serviceName + `</br></br>
+    
+    Please do not hesitate to contact us at 2128 2666 or hgctoc@hgc.com.hk if any further questions or inquires regarding your ticket
+    This is an auto notification sent from system, please do not reply this email.</br></br>
+    
+    HGC TOC`
+
+    rp(emailOptions)
+
+    emailOptions.body.to = cc
+    emailOptions.body.cc = []
+    emailOptions.body.bcc = bcc
+
+    emailOptions.body.html = `Dear All</br></br>
+
+    This is to acknowledge  the receipt of a reported case</br>
+    We will have it checked and updates will be provided once available.</br></br>
+    
+    Reference Number : `+ caseNumber + `</br>
+    Summary : ` + caseSubject + `</br>
+    Service : `+ serviceName + `</br></br>
+    
+    <a href=` + process.env.URL + `/browse/` + caseNumber + `">View request</a></br></br>
+    
+    Please do not hesitate to contact us at 2128 2666 or hgctoc@hgc.com.hk if any further questions or inquires regarding your ticket
+    This is an auto notification sent from system, please do not reply this email.</br></br>
+    
+    HGC TOC`
+
     rp(emailOptions)
 })
 
