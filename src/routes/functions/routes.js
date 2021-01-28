@@ -1103,28 +1103,30 @@ router.post('/', async (req, res) => {
             req.body.issue.fields.project.name.search('Self Service') >= 0 ||
             req.body.issue.fields.project.name.search('TOC') >= 0
         ) {
-            if (req.body.changelog.items.some((item) => (item.field === 'status' && item.toString === 'Vendor In Progress') )) {
-                const AssignVendor = {
-                    method: 'POST',
-                    uri: 'http://' + process.env.LOCALHOST + ':' + process.env.PORT + '/emailapi/TOC/AssignVendor',
-                    json: true,
-                    body: {
-                        issue: req.body.issue
+            if (req.body.changelog && req.body.changelog.items) {
+                if (req.body.changelog.items.some((item) => (item.field === 'status' && item.toString === 'Vendor In Progress'))) {
+                    const AssignVendor = {
+                        method: 'POST',
+                        uri: 'http://' + process.env.LOCALHOST + ':' + process.env.PORT + '/emailapi/TOC/AssignVendor',
+                        json: true,
+                        body: {
+                            issue: req.body.issue
+                        }
                     }
-                }
 
-                rp(AssignVendor)
-            } else if (req.body.changelog.items.some((item) => (item.field === 'status' && item.toString === 'Arrange Onsite') )) {
-                const AssignVendorApprove = {
-                    method: 'POST',
-                    uri: 'http://' + process.env.LOCALHOST + ':' + process.env.PORT + '/emailapi/TOC/AssignVendorApprove',
-                    json: true,
-                    body: {
-                        issue: req.body.issue
+                    rp(AssignVendor)
+                } else if (req.body.changelog.items.some((item) => (item.field === 'status' && item.toString === 'Arrange Onsite'))) {
+                    const AssignVendorApprove = {
+                        method: 'POST',
+                        uri: 'http://' + process.env.LOCALHOST + ':' + process.env.PORT + '/emailapi/TOC/AssignVendorApprove',
+                        json: true,
+                        body: {
+                            issue: req.body.issue
+                        }
                     }
-                }
 
-                rp(AssignVendorApprove)
+                    rp(AssignVendorApprove)
+                }
             }
         }
     }
