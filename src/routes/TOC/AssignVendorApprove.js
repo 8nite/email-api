@@ -86,7 +86,7 @@ Dear ` + authorizerName + `,<br><br>
 
 Please approve for the case: (` + caseNumber + `) ` + mappedFields['Summary'] + `<br><br>
 
-<a href=` + process.env.URL + `/browse/` + caseNumber + `">View request</a></br></br>
+<a href="` + process.env.URL + `/browse/` + caseNumber + `">View request</a></br></br>
 `
         }
     }
