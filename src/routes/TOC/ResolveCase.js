@@ -25,10 +25,10 @@ router.post('/', async (req, res) => {
     const issueLink = mappedFields['Issue Type'].name //mappedFields['Issue Type'].self.match(/[a-z]+:\/\/[^\/]+\//)[0]
     const status = mappedFields.Status.name
     const statusChanger = req.body.user.name
-    const userEmail = req.body.user.emailAddress
-    let companyEmail = []
+    
+    let userProfileEmail = []
     try {
-        companyEmail = await getEmails('TOC', 'User Profile', 'Company', mappedFields['Company'][0].match(/(.*) \([-A-Z0-9]*\)$/)[1], 'Email')
+        userProfileEmail = await getEmails('TOC', 'User Profile', 'Key', mappedFields['User Information'][0].match(/(.*) \(([-A-Z0-9]*)\)$/)[2], 'Email')
     }
     catch (e) {
         console.log(e)

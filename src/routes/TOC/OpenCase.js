@@ -29,10 +29,9 @@ router.post('/', async (req, res) => {
     const assignmentGroup = mappedFields['Assignment Group'][0].match(/(.*) \([-A-Z0-9]*\)$/)[1]
     const assignee = mappedFields.Assignee[0].split(' ')[0]
     const issueLink = mappedFields['Issue Type'].self.match(/[a-z]+:\/\/[^\/]+\//)[0]
-    const userEmail = req.body.user.emailAddress
-    let companyEmail = []
+    let userProfileEmail = []
     try {
-        companyEmail = await getEmails('TOC', 'User Profile', 'Company', mappedFields['Company'][0].match(/(.*) \([-A-Z0-9]*\)$/)[1], 'Email')
+        userProfileEmail = await getEmails('TOC', 'User Profile', 'Key', mappedFields['User Information'][0].match(/(.*) \(([-A-Z0-9]*)\)$/)[2], 'Email')
     }
     catch (e) {
         console.log(e)
@@ -45,7 +44,7 @@ router.post('/', async (req, res) => {
     //console.log(mappedFields['AssignmentGroup'][0].match(/(.*) \([-A-Z0-9]*\)$/)[1])
 
     //Send to Email
-    let to = companyEmail
+    let to = userProfileEmail
 
     //let cc = await getEmails('TOC','Assignment User', 'Group', assignmentGroup, 'Email')
     //cc = cc.concat(await getEmails('TOC','Assignment User', 'Group', 'TOC', 'Email'))
