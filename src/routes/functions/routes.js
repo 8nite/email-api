@@ -809,6 +809,18 @@ router.post('/', async (req, res) => {
                 console.log(e)
             }
         }
+        else if (req.body.issue.fields.project.name.search('Postage Record') >= 0) {
+            const OpenCase = {
+                method: 'POST',
+                uri: 'http://' + process.env.LOCALHOST + ':' + process.env.PORT + '/emailapi/PostalService/OpenCase',
+                json: true,
+                body: {
+                    issue: req.body.issue
+                }
+            }
+
+            rp(OpenCase)
+        }
     }
     else if (req.body.webhookEvent == 'jira:issue_updated') {
         console.log('An issue was updated: ' + req.body.issue.key + ' on project: ')
@@ -1126,6 +1138,33 @@ router.post('/', async (req, res) => {
                     }
 
                     rp(AssignVendorApprove)
+                }
+            }
+        }
+        else if (req.body.issue.fields.project.name.search('Postage Record') >= 0) {
+            if (req.body.changelog && req.body.changelog.items) {
+                if (req.body.changelog.items.some((item) => (item.field === 'status' && item.toString.toUpperCase() === 'CANCELED'))) {
+                    const Cancelled = {
+                        method: 'POST',
+                        uri: 'http://' + process.env.LOCALHOST + ':' + process.env.PORT + '/emailapi/PostalService/Cancelled',
+                        json: true,
+                        body: {
+                            issue: req.body.issue
+                        }
+                    }
+
+                    rp(Cancelled)
+                    if (req.body.changelog.items.some((item) => (item.field === 'status' && item.toString.toUpperCase() === 'REJECTED'))) {
+                    const Rejected = {
+                        method: 'POST',
+                        uri: 'http://' + process.env.LOCALHOST + ':' + process.env.PORT + '/emailapi/TOC/Rejected',
+                        json: true,
+                        body: {
+                            issue: req.body.issue
+                        }
+                    }
+
+                    rp(Rejected)
                 }
             }
         }

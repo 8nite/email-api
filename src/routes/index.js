@@ -26,6 +26,12 @@ import ITDevCancelCase from './ITDev/CancelCase'
 import HRNewHireOpenCase from './HR/NewHireOpenCase'
 import AlertB4SiteVisit from './ICW/AlertB4SiteVisit'
 import AlertAfterSiteVisit from './ICW/AlertAfterSiteVisit'
+import PostalServiceCancelled from './PostalService/Cancelled'
+import PostalServiceDone from './PostalService/Done'
+import PostalServiceOpenCase from './PostalService/OpenCase'
+import PostalServiceOutstanding1Day from './PostalService/Outstanding1Day'
+import PostalServiceOutstandingMoreThan1Day from './PostalService/OutstandingMoreThan1Day'
+import PostalServiceRejected from './PostalService/Rejected'
 
 var router = express.Router();
 
@@ -63,6 +69,13 @@ router.use('/HR/NewHireOpenCase', HRNewHireOpenCase);
 
 router.use('/ICW/AlertB4SiteVisit', AlertB4SiteVisit);
 router.use('/ICW/AlertAfterSiteVisit', AlertAfterSiteVisit);
+
+router.use('/PostalService/Cancelled', PostalServiceCancelled);
+router.use('/PostalService/Done', PostalServiceDone);
+router.use('/PostalService/OpenCase', PostalServiceOpenCase);
+router.use('/PostalService/Outstanding1Day', PostalServiceOutstanding1Day);
+router.use('/PostalService/OutstandingMoreThan1Day', PostalServiceOutstandingMoreThan1Day);
+router.use('/PostalService/Rejected', PostalServiceRejected);
 
 
 module.exports = router;
