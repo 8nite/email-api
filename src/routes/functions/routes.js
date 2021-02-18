@@ -1155,16 +1155,17 @@ router.post('/', async (req, res) => {
 
                     rp(Cancelled)
                     if (req.body.changelog.items.some((item) => (item.field === 'status' && item.toString.toUpperCase() === 'REJECTED'))) {
-                    const Rejected = {
-                        method: 'POST',
-                        uri: 'http://' + process.env.LOCALHOST + ':' + process.env.PORT + '/emailapi/TOC/Rejected',
-                        json: true,
-                        body: {
-                            issue: req.body.issue
+                        const Rejected = {
+                            method: 'POST',
+                            uri: 'http://' + process.env.LOCALHOST + ':' + process.env.PORT + '/emailapi/TOC/Rejected',
+                            json: true,
+                            body: {
+                                issue: req.body.issue
+                            }
                         }
-                    }
 
-                    rp(Rejected)
+                        rp(Rejected)
+                    }
                 }
             }
         }
