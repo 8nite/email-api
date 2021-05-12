@@ -36,7 +36,7 @@
     "morgan": "~1.9.1",
     "mysql": "~2.16.0",
     "node-cron": "^2.0.3",
-    "nodemailer": "^6.4.8",
+    "nodemailer": "^6.4.16",
     "oracledb": "^4.2.0",
     "query-string": "^6.12.1",
     "request": "^2.88.2",
